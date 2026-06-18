@@ -3,7 +3,10 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import type { Database } from "@/lib/types";
 
-/** Refresh the Supabase auth session on each request and propagate cookies. */
+// Routes that require an account. Predictions are gated; marketing pages are not.
+const PROTECTED_PREFIXES = ["/dashboard", "/past", "/matches", "/favorites"];
+
+/** Refresh the Supabase auth session on each request and gate protected routes. */
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
 
@@ -26,7 +29,25 @@ export async function updateSession(request: NextRequest) {
     },
   );
 
-  // Touch the session so it refreshes; do not run logic between this and return.
-  await supabase.auth.getUser();
+  // Touch the session so it refreshes. (Per Supabase SSR guidance, avoid logic
+  // between getUser() and the response other than the auth redirect below.)
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const path = request.nextUrl.pathname;
+  const needsAuth = PROTECTED_PREFIXES.some(
+    (p) => path === p || path.startsWith(`${p}/`),
+  );
+  if (!user && needsAuth) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/login";
+    url.searchParams.set("next", path);
+    const redirect = NextResponse.redirect(url);
+    // Carry over any refreshed auth cookies so the session stays consistent.
+    response.cookies.getAll().forEach((c) => redirect.cookies.set(c.name, c.value));
+    return redirect;
+  }
+
   return response;
 }

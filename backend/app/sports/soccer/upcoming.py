@@ -52,27 +52,35 @@ def _parse_pre_matches(data: dict) -> list[dict]:
 
             competitors = comp.get("competitors", [])
             home_name = away_name = None
+            home_logo = away_logo = None
 
             for c in competitors:
                 name = _team_name(c)
                 if not name:
                     continue
+                logo = c.get("team", {}).get("logo")
                 if c.get("homeAway") == "home":
-                    home_name = name
+                    home_name, home_logo = name, logo
                 elif c.get("homeAway") == "away":
-                    away_name = name
+                    away_name, away_logo = name, logo
 
             # Fallback: take first two if homeAway flag not present.
             if not home_name or not away_name:
-                names = [_team_name(c) for c in competitors if _team_name(c)]
-                if len(names) >= 2:
-                    home_name, away_name = names[0], names[1]
+                pairs = [
+                    (_team_name(c), c.get("team", {}).get("logo"))
+                    for c in competitors
+                    if _team_name(c)
+                ]
+                if len(pairs) >= 2:
+                    (home_name, home_logo), (away_name, away_logo) = pairs[0], pairs[1]
                 else:
                     continue
 
             matches.append({
                 "home": home_name,
                 "away": away_name,
+                "home_logo": home_logo,
+                "away_logo": away_logo,
                 "starts_at": event_date or f"{day}T00:00:00Z",
                 "date": day,
                 "is_neutral": 1,  # World Cup = always neutral venue

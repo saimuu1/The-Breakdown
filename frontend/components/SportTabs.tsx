@@ -4,7 +4,7 @@ const SPORTS: { id: string; label: string; soon?: boolean }[] = [
   { id: "", label: "All" },
   { id: "ufc", label: "UFC" },
   { id: "soccer", label: "Soccer" },
-  { id: "nba", label: "NBA", soon: true },
+  { id: "nba", label: "NBA" },
 ];
 
 export function SportTabs({ basePath, active }: { basePath: string; active: string }) {

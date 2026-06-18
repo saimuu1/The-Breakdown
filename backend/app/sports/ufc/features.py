@@ -200,7 +200,7 @@ def build_training_frame() -> tuple[pd.DataFrame, np.ndarray, pd.DataFrame]:
 
         rows.append(_diff_from_rows(hrow, arow))
         ys.append(int(home_won))
-        meta.append({"date": r.date, "home": home, "away": away})
+        meta.append({"date": r.date, "event": r.event, "home": home, "away": away})
 
     return pd.DataFrame(rows), np.array(ys), pd.DataFrame(meta)
 

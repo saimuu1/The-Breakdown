@@ -25,13 +25,15 @@ def generate_analysis(
     edges: list[str],
     client: LLMClient,
     system_prompt: str | None = None,
+    extra_context: list[str] | None = None,
 ) -> Analysis:
     """Build a grounded prompt from real model output and get the persona's take.
 
     Pass `system_prompt` to use a sport-specific persona (e.g. the soccer adapter's
-    football-analyst voice). Defaults to the MMA ringside persona.
+    football-analyst voice). `extra_context` carries player-leaders / form notes so
+    the write-up can name key players. Defaults to the MMA ringside persona.
     """
     sp = system_prompt if system_prompt is not None else SYSTEM_PROMPT
-    user_prompt = build_user_prompt(home, away, probs, edges)
+    user_prompt = build_user_prompt(home, away, probs, edges, extra_context)
     text = client.complete(sp, user_prompt)
     return Analysis(text=text, version=PERSONA_VERSION)

@@ -5,7 +5,8 @@
 The whole SaaS-correctness claim rests on this: the DATABASE, not the frontend,
 decides who sees paid predictions. We check three identities:
   * service_role (backend)   -> sees everything (RLS bypassed)
-  * anonymous / free user    -> sees only 'free' predictions, never 'pro'
+  * anonymous (logged out)   -> sees NOTHING (predictions are account-gated)
+  * free user                -> sees only 'free' predictions, never 'pro'
   * pro user                 -> sees everything
 
 Run after ingestion has written some 'pro' (UFC) predictions.
@@ -44,13 +45,12 @@ def main() -> int:
 
     ok = True
 
-    # 1) Anonymous user.
+    # 1) Anonymous user — predictions are account-gated, so they see NOTHING.
     anon = create_client(s.supabase_url, anon_key)
     anon_seen = anon.table("predictions").select("tier").execute().data
-    anon_pro = sum(1 for p in anon_seen if p["tier"] == "pro")
-    print(f"\n[anon]  sees {len(anon_seen)} predictions, {anon_pro} of them pro")
-    print("        expected: only free, 0 pro", "-> PASS" if anon_pro == 0 else "-> FAIL")
-    ok &= anon_pro == 0
+    print(f"\n[anon]  sees {len(anon_seen)} predictions")
+    print("        expected: 0 (account-gated)", "-> PASS" if len(anon_seen) == 0 else "-> FAIL")
+    ok &= len(anon_seen) == 0
 
     # 2) Free + pro users (created, promoted, then cleaned up).
     email_free = f"free-{uuid.uuid4().hex[:8]}@example.com"
@@ -66,18 +66,19 @@ def main() -> int:
     service.table("profiles").update({"plan": "pro"}).eq("id", u_pro.id).execute()
 
     try:
-        for label, email, expect_pro in (
-            ("free user", email_free, 0),
-            ("pro user", email_pro, n_pro),
+        for label, email, expect_total in (
+            ("free user", email_free, n_free),   # free predictions only
+            ("pro user", email_pro, n_total),    # everything
         ):
             client = create_client(s.supabase_url, anon_key)
             client.auth.sign_in_with_password({"email": email, "password": pw})
             seen = client.table("predictions").select("tier").execute().data
             seen_pro = sum(1 for p in seen if p["tier"] == "pro")
-            verdict = "PASS" if seen_pro == expect_pro else "FAIL"
+            expect_pro = 0 if label == "free user" else n_pro
+            verdict = "PASS" if (len(seen) == expect_total and seen_pro == expect_pro) else "FAIL"
             print(f"[{label}] sees {len(seen)} predictions, {seen_pro} pro "
-                  f"(expected {expect_pro} pro) -> {verdict}")
-            ok &= seen_pro == expect_pro
+                  f"(expected {expect_total} total, {expect_pro} pro) -> {verdict}")
+            ok &= len(seen) == expect_total and seen_pro == expect_pro
     finally:
         service.auth.admin.delete_user(u_free.id)
         service.auth.admin.delete_user(u_pro.id)

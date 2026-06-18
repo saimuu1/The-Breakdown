@@ -47,9 +47,9 @@ class OpenAICompatibleClient:
                 {"role": "user", "content": user},
             ],
             "temperature": 0.7,
-            # Headroom so "thinking" models (e.g. Gemini 2.5) don't spend the
-            # whole budget reasoning and truncate the visible answer.
-            "max_tokens": 800,
+            # Room for the longer, multi-section v3 breakdown (~300-380 words),
+            # plus headroom so "thinking" models don't truncate the visible answer.
+            "max_tokens": 1200,
         }
         headers = {"Authorization": f"Bearer {self._api_key}"}
 

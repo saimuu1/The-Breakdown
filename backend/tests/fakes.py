@@ -10,6 +10,7 @@ class FakeRepository:
         self.tiers = tiers or {}
         self.leagues: dict[tuple[str, str], str] = {}
         self.competitors: dict[tuple[str, str], str] = {}
+        self.competitor_logos: dict[str, str] = {}
         self.matches: dict[tuple[str, str], str] = {}
         self.features: dict[str, dict] = {}
         self.predictions: list[dict] = []
@@ -25,12 +26,15 @@ class FakeRepository:
     def ensure_league(self, sport: str, name: str) -> str:
         return self.leagues.setdefault((sport, name), self._id("league"))
 
-    def ensure_competitor(self, league_id: str, name: str) -> str:
-        return self.competitors.setdefault((league_id, name), self._id("comp"))
+    def ensure_competitor(self, league_id: str, name: str, logo_url: str | None = None) -> str:
+        cid = self.competitors.setdefault((league_id, name), self._id("comp"))
+        if logo_url:
+            self.competitor_logos[cid] = logo_url
+        return cid
 
     def upsert_match(
         self, league_id, external_id, home_id, away_id, starts_at,
-        status=None, result=None,
+        status=None, result=None, event_name=None, context=None,
     ) -> str:
         return self.matches.setdefault((league_id, external_id), self._id("match"))
 

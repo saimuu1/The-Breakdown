@@ -8,29 +8,34 @@ export default function Home() {
           The Breakdown
         </span>
         <h1 className="text-balance text-5xl font-bold tracking-tight sm:text-6xl">
-          Honest outcome predictions for the sports you watch.
+          The stats, broken down for you.
         </h1>
         <p className="max-w-xl text-lg text-neutral-400">
-          Model-driven win probabilities for soccer, UFC, and NBA — every pick
-          shipped with a punchy AI breakdown and benchmarked honestly against the
-          betting market.
+          The Breakdown reads the numbers so you don&apos;t have to. Model-driven win
+          probabilities for soccer, UFC, and NBA — each one shipped with a sharp,
+          plain-English analysis. Built for the fans who just want the read, and the
+          bettors who want an edge.
         </p>
         <div className="flex gap-4">
           <Link
-            href="/dashboard"
+            href="/login?next=/dashboard"
             className="rounded-lg bg-emerald-500 px-5 py-2.5 font-medium text-neutral-950 transition hover:bg-emerald-400"
           >
-            View predictions
+            Create an account
           </Link>
           <Link
-            href="/accuracy"
+            href="/login?next=/dashboard"
             className="rounded-lg border border-neutral-700 px-5 py-2.5 font-medium text-neutral-200 transition hover:border-neutral-500"
           >
-            See our track record
+            Log in
           </Link>
         </div>
         <p className="text-xs text-neutral-600">
-          Soccer is free. UFC &amp; NBA picks unlock with Pro.
+          Free account for soccer picks. UFC &amp; NBA unlock with Pro. See the{" "}
+          <Link href="/accuracy" className="underline hover:text-neutral-400">
+            track record
+          </Link>
+          .
         </p>
       </section>
     </main>

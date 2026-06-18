@@ -1,0 +1,21 @@
+{
+  "sport": "nba",
+  "version": "v1",
+  "saved_at": "2026-06-18T18:28:29.014647+00:00",
+  "brier": 0.19486331057246967,
+  "brier_baseline": 0.24626311658817676,
+  "log_loss": 0.5744522251530494,
+  "log_loss_baseline": 0.6856592969069137,
+  "home_win_rate": 0.543448275862069,
+  "n_train": 2175,
+  "n_test": 533,
+  "cutoff": "2026-02-08",
+  "features": [
+    "win_rate_dif",
+    "points_pg_dif",
+    "allowed_pg_dif",
+    "point_diff_pg_dif",
+    "n_games_dif",
+    "is_home"
+  ]
+}

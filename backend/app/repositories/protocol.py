@@ -16,8 +16,12 @@ class Repository(Protocol):
         """Get-or-create a league; return its id."""
         ...
 
-    def ensure_competitor(self, league_id: str, name: str) -> str:
-        """Get-or-create a competitor within a league; return its id."""
+    def ensure_competitor(self, league_id: str, name: str, logo_url: str | None = None) -> str:
+        """Get-or-create a competitor within a league; return its id.
+
+        `logo_url` (team crest / fighter headshot) is stored on create and
+        backfilled if the existing row lacks one.
+        """
         ...
 
     def upsert_match(
@@ -29,10 +33,14 @@ class Repository(Protocol):
         starts_at: str,
         status: str | None = None,
         result: dict | None = None,
+        event_name: str | None = None,
+        context: dict | None = None,
     ) -> str:
         """Idempotent upsert keyed on (league_id, external_id); return match id.
 
         `status`/`result` are set only when backfilling completed events.
+        `event_name` groups matches (e.g. a UFC card); `context` holds per-match
+        display extras (player leaders). Each is only written when provided.
         """
         ...
 

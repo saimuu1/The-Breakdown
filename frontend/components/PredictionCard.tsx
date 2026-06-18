@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { ProbabilityBar } from "@/components/ProbabilityBar";
+import { TeamCrest } from "@/components/TeamCrest";
 import type { PredictionView } from "@/lib/queries";
 
 const SPORT_LABEL: Record<string, string> = {
@@ -61,9 +62,15 @@ export function PredictionCard({ p, favorited = false }: { p: PredictionView; fa
       </div>
 
       <div className="mb-4 flex items-center justify-between gap-3">
-        <span className="flex-1 text-right font-semibold text-neutral-100">{p.match.home.name}</span>
+        <div className="flex flex-1 items-center justify-end gap-2 text-right">
+          <span className="font-semibold text-neutral-100">{p.match.home.name}</span>
+          <TeamCrest name={p.match.home.name} logoUrl={p.match.home.logo_url} />
+        </div>
         <span className="text-xs font-medium text-neutral-600">vs</span>
-        <span className="flex-1 font-semibold text-neutral-100">{p.match.away.name}</span>
+        <div className="flex flex-1 items-center gap-2">
+          <TeamCrest name={p.match.away.name} logoUrl={p.match.away.logo_url} />
+          <span className="font-semibold text-neutral-100">{p.match.away.name}</span>
+        </div>
       </div>
 
       <ProbabilityBar probs={p.probs} />

@@ -13,6 +13,7 @@ import logging
 import time
 from dataclasses import dataclass
 
+from app.integrations.espn_leaders import leaders_to_context
 from app.llm.client import LLMClient
 from app.llm.persona import PERSONA_VERSION
 from app.repositories.protocol import Repository
@@ -44,10 +45,13 @@ def _ingest_match(
     llm: LLMClient | None,
 ) -> None:
     league_id = repo.ensure_league(adapter.sport, adapter.sport)
-    home_id = repo.ensure_competitor(league_id, raw.home)
-    away_id = repo.ensure_competitor(league_id, raw.away)
+    home_id = repo.ensure_competitor(league_id, raw.home, raw.raw.get("home_logo"))
+    away_id = repo.ensure_competitor(league_id, raw.away, raw.raw.get("away_logo"))
+
+    leaders = raw.raw.get("leaders")
+    context = {"leaders": leaders} if leaders else None
     match_id = repo.upsert_match(
-        league_id, raw.external_id, home_id, away_id, raw.starts_at
+        league_id, raw.external_id, home_id, away_id, raw.starts_at, context=context
     )
 
     features = adapter.build_features(raw)
@@ -67,8 +71,10 @@ def _ingest_match(
         try:
             edges = adapter.edges(features, raw.home, raw.away)
             system_prompt = getattr(adapter, "system_prompt", None)
+            extra = leaders_to_context(leaders, raw.home, raw.away)
             analysis = generate_analysis(
-                raw.home, raw.away, probs, edges, llm, system_prompt=system_prompt
+                raw.home, raw.away, probs, edges, llm,
+                system_prompt=system_prompt, extra_context=extra,
             )
             repo.save_analysis(prediction_id, analysis.text, analysis.version)
             time.sleep(_LLM_THROTTLE_SECONDS)

@@ -49,12 +49,20 @@ export default async function DashboardPage({
   );
 }
 
+const SPORT_NAME: Record<string, string> = { ufc: "UFC", soccer: "soccer", nba: "NBA" };
+
 function EmptyMessage({ sport, loggedIn }: { sport: string; loggedIn: boolean }) {
-  if (sport === "nba") {
+  // A specific sport is selected but has no upcoming games (e.g. NBA offseason).
+  if (sport && loggedIn) {
     return (
       <div>
-        <p className="text-lg font-medium text-neutral-200">NBA is coming soon.</p>
-        <p className="mt-2 text-sm">UFC and Soccer are live today. NBA predictions are next.</p>
+        <p className="text-lg font-medium text-neutral-200">
+          No upcoming {SPORT_NAME[sport] ?? sport} predictions right now.
+        </p>
+        <p className="mt-2 text-sm">
+          Check the <Link href={`/past?sport=${sport}`} className="text-emerald-400 hover:underline">
+          past predictions</Link> for the latest completed games, or another sport above.
+        </p>
       </div>
     );
   }

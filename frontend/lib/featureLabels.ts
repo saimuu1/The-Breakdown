@@ -31,9 +31,18 @@ const SOCCER_EDGE_META: Record<string, Meta> = {
   n_games_dif: { label: "Recent games played", polarity: 1, scale: 10 },
 };
 
+const NBA_EDGE_META: Record<string, Meta> = {
+  win_rate_dif: { label: "Recent win rate", polarity: 1, scale: 0.3 },
+  point_diff_pg_dif: { label: "Point differential per game", polarity: 1, scale: 6 },
+  points_pg_dif: { label: "Points scored per game", polarity: 1, scale: 6 },
+  allowed_pg_dif: { label: "Points allowed per game", polarity: -1, scale: 6 },
+  n_games_dif: { label: "Recent games played", polarity: 1, scale: 10 },
+};
+
 const EDGE_META_BY_SPORT: Record<string, Record<string, Meta>> = {
   ufc: UFC_EDGE_META,
   soccer: SOCCER_EDGE_META,
+  nba: NBA_EDGE_META,
 };
 
 export interface Edge {
@@ -68,4 +77,35 @@ export function computeEdges(
     .sort((a, b) => b.rank - a.rank)
     .slice(0, n)
     .map((s) => s.edge);
+}
+
+export interface StatRow {
+  label: string;
+  favored: string;
+  /** Bar fill 0..1 — scale-normalized magnitude, capped. */
+  strength: number;
+  magnitude: number;
+}
+
+/** Every known stat for a sport (not just the top edges), for a head-to-head table. */
+export function statRows(
+  diffs: Record<string, number | null>,
+  home: string,
+  away: string,
+  sportId: string = "ufc",
+): StatRow[] {
+  const meta = EDGE_META_BY_SPORT[sportId] ?? UFC_EDGE_META;
+  const rows: StatRow[] = [];
+  for (const [key, m] of Object.entries(meta)) {
+    const value = diffs[key];
+    if (value == null || Number.isNaN(value)) continue;
+    const favored = value === 0 ? "" : value * m.polarity > 0 ? home : away;
+    rows.push({
+      label: m.label,
+      favored,
+      strength: Math.min(1, Math.abs(value) / (m.scale * 2)),
+      magnitude: Math.abs(value),
+    });
+  }
+  return rows.sort((a, b) => b.strength - a.strength);
 }

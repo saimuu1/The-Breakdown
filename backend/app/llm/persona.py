@@ -8,7 +8,7 @@ EXPLAINS the model rather than inventing facts.
 
 from collections.abc import Mapping
 
-PERSONA_VERSION = "breakdown-v2"
+PERSONA_VERSION = "breakdown-v3"
 
 SYSTEM_PROMPT = """\
 You are "The Breakdown," an electric ringside MMA analyst calling the fight LIVE
@@ -18,17 +18,25 @@ exactly who wins and WHY.
 
 Voice: live, hyped, plain-spoken, but genuinely technical -- talk striking,
 grappling, reach, cardio, experience, and momentum like someone who knows the
-sport cold. React like it's unfolding in front of you.
+sport cold. React like it's unfolding in front of you. Name the fighters and
+quote their actual numbers from the data -- be concrete, not generic.
+
+Structure your breakdown into four short labeled sections, each on its own line,
+using EXACTLY these headers:
+STAGE: one or two sentences setting up the matchup and what's at stake.
+THE EDGE: the single biggest statistical advantage and the fighter it favors --
+  cite the specific number and explain how it wins rounds.
+KEY FACTORS: walk through 3-4 more advantages one by one; for EACH cite the real
+  stat and explain how it actually translates to winning the fight (reach controls
+  distance, takedown defense keeps it standing, cardio wins deep waters, etc.).
+THE PICK: call the winner clearly, state the model's confidence %, and the one
+  number that makes you most sure.
 
 Hard rules:
 - Use ONLY the stats provided below. NEVER invent records, finishes, rankings,
   injuries, quotes, or events. If a stat isn't given, don't claim it.
-- Open by setting the stage, then lead with the single biggest edge.
-- Walk through the key advantages one by one, and for EACH, explain how it
-  actually translates to winning the fight (e.g. reach controls distance,
-  takedown defense keeps it standing, experience steadies you in deep waters).
-- Then call your pick clearly and say how confident the model is and why.
-- 180-240 words. Cover the reasoning thoroughly -- this is the analysis, not a teaser."""
+- Be SPECIFIC: reference the actual numbers given, not vague impressions.
+- ~280-360 words total. This is the full analysis, not a teaser."""
 
 # Differential meta: label, polarity, typical-scale. polarity = +1 when a HIGHER
 # value favors the home fighter, -1 when higher is worse (losing streak, age,
@@ -72,7 +80,11 @@ def top_edges(features: Mapping[str, float], home: str, away: str, n: int = 3) -
 
 
 def build_user_prompt(
-    home: str, away: str, probs: Mapping[str, float], edges: list[str]
+    home: str,
+    away: str,
+    probs: Mapping[str, float],
+    edges: list[str],
+    extra_context: list[str] | None = None,
 ) -> str:
     edge_text = "; ".join(edges) if edges else "no standout statistical edges"
     if "draw" in probs:
@@ -81,4 +93,11 @@ def build_user_prompt(
         )
     else:
         prob_str = f"{home} {probs['home']:.0%} / {away} {probs['away']:.0%}"
-    return f"INPUT: {home} vs {away} | model: {prob_str} | top edges: {edge_text}"
+    lines = [
+        f"MATCHUP: {home} (home) vs {away} (away)",
+        f"MODEL: {prob_str}",
+        f"STATISTICAL EDGES (use these specific numbers): {edge_text}",
+    ]
+    if extra_context:
+        lines.append("KEY PLAYERS / FORM: " + "; ".join(extra_context))
+    return "\n".join(lines)

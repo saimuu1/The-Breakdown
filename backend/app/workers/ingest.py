@@ -19,6 +19,7 @@ logger = logging.getLogger("ingest")
 
 def _register_adapters() -> None:
     """Import adapters so they register themselves. Added per phase."""
+    import app.sports.nba.adapter  # noqa: F401  (registers NBAAdapter)
     import app.sports.soccer.adapter  # noqa: F401  (registers SoccerAdapter)
     import app.sports.ufc.adapter  # noqa: F401  (registers UFCAdapter)
 

@@ -14,8 +14,10 @@ export interface PredictionView {
     starts_at: string;
     status: string;
     result: { winner?: string; winner_name?: string } | null;
-    home: { name: string };
-    away: { name: string };
+    event_name: string | null;
+    context: { leaders?: { home?: string[]; away?: string[] } | null } | null;
+    home: { name: string; logo_url: string | null };
+    away: { name: string; logo_url: string | null };
     league: { sport_id: string };
   };
 }
@@ -23,9 +25,9 @@ export interface PredictionView {
 const SELECT = `
   id, probs, analysis, analysis_version, model_version, tier,
   match:matches!inner(
-    id, starts_at, status, result,
-    home:competitors!matches_home_id_fkey(name),
-    away:competitors!matches_away_id_fkey(name),
+    id, starts_at, status, result, event_name, context,
+    home:competitors!matches_home_id_fkey(name, logo_url),
+    away:competitors!matches_away_id_fkey(name, logo_url),
     league:leagues!inner(sport_id)
   )
 `;
@@ -60,6 +62,69 @@ export async function getPredictions(
   if (sport) rows = rows.filter((p) => p.match.league.sport_id === sport);
   // Upcoming: soonest first. Past: most recent first.
   return timeframe === "past" ? rows.reverse() : rows;
+}
+
+export interface PastQuery {
+  sport?: string;
+  q?: string;
+  event?: string;
+  limit?: number;
+}
+
+/** Past predictions, server-side filtered + bounded (history can be thousands of
+   rows, past PostgREST's 1000-row cap). We resolve ordered match ids first
+   (sport / search / event filters live on the matches table), then fetch the
+   RLS-gated predictions for them and restore the order. */
+export async function getPastPredictions({
+  sport,
+  q,
+  event,
+  limit = 120,
+}: PastQuery): Promise<PredictionView[]> {
+  const supabase = await createClient();
+  const nowIso = new Date().toISOString();
+
+  let order: string[] = [];
+  const search = q?.trim();
+
+  if (search) {
+    const { data: comps } = await supabase
+      .from("competitors")
+      .select("id")
+      .ilike("name", `%${search}%`)
+      .limit(80);
+    const ids = ((comps ?? []) as { id: string }[]).map((c) => c.id);
+    if (ids.length === 0) return [];
+    let mq = supabase
+      .from("matches")
+      .select("id, leagues!inner(sport_id)")
+      .lt("starts_at", nowIso)
+      .or(`home_id.in.(${ids.join(",")}),away_id.in.(${ids.join(",")})`)
+      .order("starts_at", { ascending: false })
+      .limit(limit);
+    if (sport) mq = mq.eq("leagues.sport_id", sport);
+    const { data } = await mq;
+    order = ((data ?? []) as { id: string }[]).map((m) => m.id);
+  } else {
+    let mq = supabase
+      .from("matches")
+      .select("id, leagues!inner(sport_id)")
+      .lt("starts_at", nowIso)
+      .order("starts_at", { ascending: false })
+      .limit(limit);
+    if (sport) mq = mq.eq("leagues.sport_id", sport);
+    if (event) mq = mq.eq("event_name", event);
+    const { data } = await mq;
+    order = ((data ?? []) as { id: string }[]).map((m) => m.id);
+  }
+
+  if (order.length === 0) return [];
+
+  const { data, error } = await supabase.from("predictions").select(SELECT).in("match_id", order);
+  if (error) throw error;
+  const byMatch = new Map<string, PredictionView>();
+  for (const p of (data ?? []) as unknown as PredictionView[]) byMatch.set(p.match.id, p);
+  return order.map((id) => byMatch.get(id)).filter(Boolean) as PredictionView[];
 }
 
 /** A single prediction by match id, or null if not visible / not found. */

@@ -26,18 +26,25 @@ exactly who wins and WHY.
 
 Voice: live, tactical, plain-spoken -- talk recent form, goal threat, defensive
 solidity, neutral-venue dynamics, and momentum like someone who knows the
-beautiful game cold.
+beautiful game cold. When key players/form are given, NAME them and say what they
+bring; quote the actual numbers from the data -- be concrete, not generic.
+
+Structure your breakdown into four short labeled sections, each on its own line,
+using EXACTLY these headers:
+STAGE: one or two sentences setting up the fixture and what's at stake.
+THE EDGE: the single biggest statistical advantage and the side it favors -- cite
+  the specific number and explain how it wins the match.
+KEY FACTORS: walk through 3-4 more advantages one by one; for EACH cite the real
+  stat (and name a key player when provided) and explain how it translates to
+  three points here.
+THE PICK: call it clearly -- home win, draw, or away win -- state the model's
+  confidence %, and the one number that makes you most sure.
 
 Hard rules:
-- Use ONLY the stats provided below. NEVER invent league tables, squad depth,
-  injuries, manager quotes, or events that aren't in the data.
-- Open by setting the stage (context, form).
-- Lead with the single biggest edge, then walk through the key advantages one by
-  one -- for EACH, explain how it translates to winning this specific match.
-- Call your pick clearly -- home win, draw, or away win -- and say how confident
-  the model is and why.
-- 180-240 words. Cover the reasoning thoroughly -- this is the analysis,
-  not a teaser."""
+- Use ONLY the stats provided below. NEVER invent league tables, injuries,
+  manager quotes, or events that aren't in the data.
+- Be SPECIFIC: reference the actual numbers and named players given.
+- ~280-360 words total. This is the full analysis, not a teaser."""
 
 _SOCCER_EDGE_META: dict[str, tuple[str, int, float]] = {
     "win_rate_dif": ("recent win rate", 1, 0.3),
@@ -113,7 +120,11 @@ class SoccerAdapter:
                     home=m["home"],
                     away=m["away"],
                     starts_at=m["starts_at"],
-                    raw={"is_neutral": m.get("is_neutral", 1)},
+                    raw={
+                        "is_neutral": m.get("is_neutral", 1),
+                        "home_logo": m.get("home_logo"),
+                        "away_logo": m.get("away_logo"),
+                    },
                 )
             )
         return fixtures
@@ -128,7 +139,7 @@ class SoccerAdapter:
         return predict_match(features)
 
     def edges(self, features: dict, home: str, away: str) -> list[str]:
-        return _top_soccer_edges(features, home, away)
+        return _top_soccer_edges(features, home, away, n=6)
 
 
 adapter = SoccerAdapter()

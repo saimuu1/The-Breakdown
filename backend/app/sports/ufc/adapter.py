@@ -50,7 +50,7 @@ class UFCAdapter:
 
     def edges(self, features: dict, home: str, away: str) -> list[str]:
         """Human-readable grounding for the persona — optional adapter capability."""
-        return top_edges(features, home, away)
+        return top_edges(features, home, away, n=8)
 
 
 adapter = UFCAdapter()

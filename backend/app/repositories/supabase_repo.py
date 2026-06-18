@@ -52,20 +52,26 @@ class SupabaseRepository:
         )
         return created.data[0]["id"]
 
-    def ensure_competitor(self, league_id: str, name: str) -> str:
+    def ensure_competitor(self, league_id: str, name: str, logo_url: str | None = None) -> str:
         existing = (
             self._db.table("competitors")
-            .select("id")
+            .select("id,logo_url")
             .eq("league_id", league_id)
             .eq("name", name)
             .limit(1)
             .execute()
         )
         if existing.data:
-            return existing.data[0]["id"]
+            row = existing.data[0]
+            # Backfill the logo if we now have one and the row is missing it.
+            if logo_url and not row.get("logo_url"):
+                self._db.table("competitors").update({"logo_url": logo_url}).eq(
+                    "id", row["id"]
+                ).execute()
+            return row["id"]
         created = (
             self._db.table("competitors")
-            .insert({"league_id": league_id, "name": name})
+            .insert({"league_id": league_id, "name": name, "logo_url": logo_url})
             .execute()
         )
         return created.data[0]["id"]
@@ -79,6 +85,8 @@ class SupabaseRepository:
         starts_at: str,
         status: str | None = None,
         result: dict | None = None,
+        event_name: str | None = None,
+        context: dict | None = None,
     ) -> str:
         row = {
             "league_id": league_id,
@@ -87,12 +95,16 @@ class SupabaseRepository:
             "away_id": away_id,
             "starts_at": starts_at,
         }
-        # Only set status/result when backfilling completed events, so live
-        # upcoming upserts don't clobber an existing result with NULL.
+        # Only set these when provided, so live upcoming upserts don't clobber an
+        # existing value with NULL.
         if status is not None:
             row["status"] = status
         if result is not None:
             row["result"] = _json_safe(result)
+        if event_name is not None:
+            row["event_name"] = event_name
+        if context is not None:
+            row["context"] = _json_safe(context)
         res = (
             self._db.table("matches")
             .upsert(row, on_conflict="league_id,external_id")

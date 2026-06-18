@@ -34,7 +34,7 @@ MODEL_VERSION = "ufc-v1"
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--years", type=int, default=3, help="how many years back to backfill")
+    parser.add_argument("--years", type=int, default=1, help="how many years back to backfill")
     args = parser.parse_args()
 
     logger.info("Building point-in-time features for all historical fights…")

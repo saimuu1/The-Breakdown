@@ -51,7 +51,8 @@ def _ingest_match(
     leaders = raw.raw.get("leaders")
     context = {"leaders": leaders} if leaders else None
     match_id = repo.upsert_match(
-        league_id, raw.external_id, home_id, away_id, raw.starts_at, context=context
+        league_id, raw.external_id, home_id, away_id, raw.starts_at,
+        context=context, event_name=raw.raw.get("event_name"),
     )
 
     features = adapter.build_features(raw)

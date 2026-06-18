@@ -50,7 +50,9 @@ function LoginForm() {
             {mode === "login" ? "Log in" : "Create account"}
           </h1>
           <p className="mb-5 text-sm text-neutral-500">
-            {mode === "login" ? "Access your predictions." : "Free tier — soccer picks."}
+            {mode === "login"
+              ? "Access every pick."
+              : "Free account — every sport unlocked."}
           </p>
 
           <form onSubmit={onSubmit} className="space-y-3">

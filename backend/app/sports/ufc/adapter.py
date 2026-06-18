@@ -35,7 +35,11 @@ class UFCAdapter:
                     home=b["home"],
                     away=b["away"],
                     starts_at=b["starts_at"],
-                    raw={"home": b["home"], "away": b["away"]},
+                    raw={
+                        "home": b["home"],
+                        "away": b["away"],
+                        "event_name": b.get("event_name"),
+                    },
                 )
             )
         return fixtures

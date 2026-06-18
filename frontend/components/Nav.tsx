@@ -8,12 +8,6 @@ export async function Nav() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  let plan: string | null = null;
-  if (user) {
-    const { data } = await supabase.from("profiles").select("plan").eq("id", user.id).maybeSingle();
-    plan = (data as { plan: string } | null)?.plan ?? "free";
-  }
-
   return (
     <nav className="sticky top-0 z-10 border-b border-neutral-800 bg-neutral-950/80 backdrop-blur">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-3">
@@ -28,27 +22,18 @@ export async function Nav() {
             Past
           </Link>
           {user && (
-            <Link href="/favorites" className="text-neutral-300 hover:text-white">
-              Favorites
-            </Link>
+            <>
+              <Link href="/favorites" className="text-neutral-300 hover:text-white">
+                Favorites
+              </Link>
+              <Link href="/accuracy" className="text-neutral-300 hover:text-white">
+                Track record
+              </Link>
+            </>
           )}
-          <Link href="/accuracy" className="text-neutral-300 hover:text-white">
-            Track record
-          </Link>
           {user ? (
             <div className="flex items-center gap-3">
-              <span className="hidden items-center gap-1.5 text-xs text-neutral-500 sm:flex">
-                {user.email}
-                <span
-                  className={`rounded px-1.5 py-0.5 font-semibold uppercase ${
-                    plan === "pro"
-                      ? "bg-emerald-500/15 text-emerald-400"
-                      : "bg-neutral-800 text-neutral-400"
-                  }`}
-                >
-                  {plan}
-                </span>
-              </span>
+              <span className="hidden text-xs text-neutral-500 sm:block">{user.email}</span>
               <form action="/auth/signout" method="post">
                 <button className="text-neutral-400 hover:text-white" type="submit">
                   Sign out

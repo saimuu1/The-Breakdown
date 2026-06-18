@@ -57,7 +57,7 @@ def _backfill_event(event: dict, repo: SupabaseRepository, tier: str, llm) -> in
         away_id = repo.ensure_competitor(league_id, away)
         match_id = repo.upsert_match(
             league_id, external_id, home_id, away_id, event["starts_at"],
-            status="completed", result=result,
+            status="completed", result=result, event_name=event["name"],
         )
         repo.save_features(match_id, features)
         prediction_id = repo.save_prediction(match_id, tier, MODEL_VERSION, probs)

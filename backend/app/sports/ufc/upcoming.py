@@ -43,6 +43,7 @@ def fetch_upcoming_bouts() -> list[dict]:
     for event in data.get("events", []):
         event_date = event.get("date", "")  # e.g. 2026-06-20T21:00Z
         day = event_date.split("T")[0]
+        event_name = event.get("name")  # e.g. "UFC Freedom 250: Topuria vs. Gaethje"
         for comp in event.get("competitions", []):
             state = comp.get("status", {}).get("type", {}).get("state")
             if state and state != "pre":
@@ -58,6 +59,7 @@ def fetch_upcoming_bouts() -> list[dict]:
                     "away": names[1],
                     "starts_at": event_date or f"{day}T00:00:00Z",
                     "date": day,
+                    "event_name": event_name,
                 }
             )
     return bouts

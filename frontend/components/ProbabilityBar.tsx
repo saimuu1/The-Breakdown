@@ -34,7 +34,9 @@ export function ProbabilityBar({ probs }: { probs: Record<string, number> }) {
         {entries.map(([outcome, p]) => (
           <span
             key={outcome}
-            className={outcome === top[0] ? "font-semibold text-neutral-100" : "text-neutral-500"}
+            className={`capitalize ${
+              outcome === top[0] ? "font-semibold text-neutral-100" : "text-neutral-500"
+            }`}
           >
             {outcome} {(p * 100).toFixed(0)}%
           </span>

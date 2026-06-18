@@ -35,9 +35,13 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
           <MatchDetail prediction={prediction} matchId={id} />
         ) : (
           <div className="mt-10 rounded-xl border border-dashed border-neutral-800 bg-neutral-900/50 p-10 text-center">
-            <p className="text-lg font-medium">This prediction isn&apos;t available on your plan.</p>
+            <p className="text-lg font-medium">This prediction isn&apos;t available.</p>
             <p className="mt-2 text-sm text-neutral-400">
-              It may be a Pro-tier pick — the database hides it from free accounts.
+              You may need to{" "}
+              <Link href="/login?next=/dashboard" className="text-emerald-400 hover:underline">
+                log in
+              </Link>{" "}
+              to view picks, or this match no longer exists.
             </p>
           </div>
         )}

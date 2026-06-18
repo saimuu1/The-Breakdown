@@ -49,7 +49,7 @@ export default async function DashboardPage({
   );
 }
 
-const SPORT_NAME: Record<string, string> = { ufc: "UFC", soccer: "soccer", nba: "NBA" };
+const SPORT_NAME: Record<string, string> = { ufc: "UFC", soccer: "Soccer", nba: "NBA" };
 
 function EmptyMessage({ sport, loggedIn }: { sport: string; loggedIn: boolean }) {
   // A specific sport is selected but has no upcoming games (e.g. NBA offseason).
@@ -66,21 +66,32 @@ function EmptyMessage({ sport, loggedIn }: { sport: string; loggedIn: boolean })
       </div>
     );
   }
-  return (
-    <div>
-      <p className="text-lg font-medium text-neutral-200">No upcoming predictions on your plan.</p>
-      <p className="mx-auto mt-2 max-w-md text-sm">
-        Soccer is free — log in to see World Cup picks. UFC &amp; NBA are Pro-tier; the database
-        enforces this, so free accounts can&apos;t see paid picks.
-      </p>
-      {!loggedIn && (
+  if (!loggedIn) {
+    return (
+      <div>
+        <p className="text-lg font-medium text-neutral-200">Log in to see the picks.</p>
+        <p className="mx-auto mt-2 max-w-md text-sm">
+          A free account unlocks every Soccer, UFC, and NBA prediction — upcoming and past.
+        </p>
         <Link
-          href="/login"
+          href="/login?next=/dashboard"
           className="mt-5 inline-block rounded-lg bg-emerald-500 px-4 py-2 font-medium text-neutral-950 hover:bg-emerald-400"
         >
-          Log in
+          Create a free account
         </Link>
-      )}
+      </div>
+    );
+  }
+  return (
+    <div>
+      <p className="text-lg font-medium text-neutral-200">No upcoming predictions right now.</p>
+      <p className="mx-auto mt-2 max-w-md text-sm">
+        Nothing on the schedule at the moment. Check the{" "}
+        <Link href="/past" className="text-emerald-400 hover:underline">
+          past predictions
+        </Link>{" "}
+        for recent completed games.
+      </p>
     </div>
   );
 }

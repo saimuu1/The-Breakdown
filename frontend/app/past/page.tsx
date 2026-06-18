@@ -16,11 +16,19 @@ function lastSeries(preds: PredictionView[]): PredictionView[] {
   );
 }
 
-/** Narrow to the most recent UFC card (group by event_name). */
+/** Narrow to the most recent UFC card. Prefer the latest fight's event_name when
+   set; otherwise fall back to grouping by its date (one card = one date). */
 function latestCard(preds: PredictionView[]): { event: string | null; preds: PredictionView[] } {
-  const event = preds.find((p) => p.match.event_name)?.match.event_name ?? null;
-  if (!event) return { event: null, preds };
-  return { event, preds: preds.filter((p) => p.match.event_name === event) };
+  if (preds.length === 0) return { event: null, preds };
+  const top = preds[0].match;
+  if (top.event_name) {
+    return {
+      event: top.event_name,
+      preds: preds.filter((p) => p.match.event_name === top.event_name),
+    };
+  }
+  const day = top.starts_at.slice(0, 10);
+  return { event: null, preds: preds.filter((p) => p.match.starts_at.slice(0, 10) === day) };
 }
 
 export default async function PastPage({
@@ -41,7 +49,16 @@ export default async function PastPage({
     if (sport === "ufc") {
       const { event: latest, preds } = latestCard(all);
       predictions = preds;
-      if (latest) blurb = `Showing the latest card: ${latest}. Search a fighter to go further back.`;
+      if (latest) {
+        blurb = `Showing the latest card: ${latest}. Search a fighter to go further back.`;
+      } else if (preds.length) {
+        const when = new Date(preds[0].match.starts_at).toLocaleDateString("en-US", {
+          month: "long",
+          day: "numeric",
+          year: "numeric",
+        });
+        blurb = `Showing the latest card (${when}). Search a fighter to go further back.`;
+      }
     } else if (sport === "nba") {
       predictions = lastSeries(all);
       if (predictions.length) {

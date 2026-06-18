@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "The Breakdown — Sports Predictions",
   description:
-    "Model-driven win probabilities for soccer, UFC, and NBA, with AI analysis benchmarked honestly against the betting market.",
+    "Model-driven win probabilities for Soccer, UFC, and NBA, with AI analysis benchmarked honestly against the betting market.",
 };
 
 export default function RootLayout({

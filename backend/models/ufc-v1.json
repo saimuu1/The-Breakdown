@@ -1,0 +1,89 @@
+{
+  "sport": "ufc",
+  "version": "v1",
+  "saved_at": "2026-06-17T21:23:58.798081+00:00",
+  "model_type": "logistic",
+  "features": [
+    "win_rate_dif",
+    "win_streak_dif",
+    "loss_streak_dif",
+    "n_fights_dif",
+    "finish_rate_dif",
+    "sig_pm_dif",
+    "sig_absorbed_pm_dif",
+    "sig_acc_dif",
+    "sig_def_dif",
+    "td_per15_dif",
+    "td_acc_dif",
+    "sub_per15_dif",
+    "ctrl_frac_dif",
+    "age_dif",
+    "height_cm_dif",
+    "reach_cm_dif",
+    "days_since_last_dif"
+  ],
+  "feature_engineering": "self-computed point-in-time differentials from UFCStats raw data",
+  "train_n": 6820,
+  "test_n": 1706,
+  "test_window": [
+    "2023-02-04",
+    "2026-05-16"
+  ],
+  "model": {
+    "brier": 0.23335758831816278,
+    "log_loss": 0.658753243144273,
+    "n": 1706
+  },
+  "market": {
+    "brier": 0.19994780712797014,
+    "log_loss": 0.5849737571874222,
+    "n": 1374
+  },
+  "calibration": [
+    {
+      "p_mean": 0.07928119676785683,
+      "frac_pos": 0.0,
+      "count": 3
+    },
+    {
+      "p_mean": 0.16956433501588383,
+      "frac_pos": 0.3333333333333333,
+      "count": 6
+    },
+    {
+      "p_mean": 0.2673233404685413,
+      "frac_pos": 0.2608695652173913,
+      "count": 69
+    },
+    {
+      "p_mean": 0.3606867999394528,
+      "frac_pos": 0.31223628691983124,
+      "count": 237
+    },
+    {
+      "p_mean": 0.453661204242432,
+      "frac_pos": 0.4521072796934866,
+      "count": 522
+    },
+    {
+      "p_mean": 0.5454924301816189,
+      "frac_pos": 0.5519713261648745,
+      "count": 558
+    },
+    {
+      "p_mean": 0.6396294509137398,
+      "frac_pos": 0.6626506024096386,
+      "count": 249
+    },
+    {
+      "p_mean": 0.7334183491452289,
+      "frac_pos": 0.8,
+      "count": 55
+    },
+    {
+      "p_mean": 0.831784270101729,
+      "frac_pos": 0.7142857142857143,
+      "count": 7
+    }
+  ]
+}

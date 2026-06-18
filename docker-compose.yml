@@ -1,0 +1,17 @@
+# The database is provided by the Supabase CLI local stack (`supabase start`),
+# NOT by this compose file. This runs only the FastAPI backend (and Redis later).
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/.env
+    # On macOS, reach the Supabase CLI stack on the host:
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # redis:                       # Phase 9 stretch — external API caching / job queue
+  #   image: redis:7-alpine
+  #   ports:
+  #     - "6379:6379"

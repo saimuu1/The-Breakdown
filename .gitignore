@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# Node / Next
+node_modules/
+.next/
+out/
+next-env.d.ts
+
+# Env & secrets — commit only the .example files
+.env
+.env.*
+!.env.example
+!.env.local.example
+.env.local
+
+# Supabase local
+supabase/.branches/
+supabase/.temp/
+
+# ML artifacts (kept out of git; produced by training)
+backend/models/*.joblib
+backend/models/*.pkl
+
+# Datasets (downloaded on demand by the sport data modules; not redistributed)
+backend/data/*.csv
+data/**/*.csv
+/data/
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/

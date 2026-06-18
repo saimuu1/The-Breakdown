@@ -1,0 +1,26 @@
+{
+  "sport": "soccer",
+  "version": "v1",
+  "saved_at": "2026-06-18T06:04:20.967035+00:00",
+  "brier": 0.18598563452974384,
+  "brier_baseline": 0.21162240060046048,
+  "log_loss": 0.9430483016387415,
+  "log_loss_baseline": 1.052613254411941,
+  "n_train": 38491,
+  "n_test": 9620,
+  "cutoff": "2016-05-31",
+  "features": [
+    "win_rate_dif",
+    "draw_rate_dif",
+    "goals_pg_dif",
+    "conceded_pg_dif",
+    "goal_diff_pg_dif",
+    "n_games_dif",
+    "is_neutral"
+  ],
+  "outcome_dist": {
+    "0": 2786,
+    "1": 2253,
+    "2": 4581
+  }
+}

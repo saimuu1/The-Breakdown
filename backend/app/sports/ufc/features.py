@@ -17,7 +17,7 @@ from collections.abc import Mapping
 import numpy as np
 import pandas as pd
 
-from app.sports.ufc.data import load_tott
+from app.sports.ufc.data import load_results, load_tott
 from app.sports.ufc.raw import build_fight_log
 
 # Per-fighter pre-fight form. The model features are the home-minus-away diffs.
@@ -48,6 +48,26 @@ def normalize_name(name: str) -> str:
     """Accent/case-insensitive key so ESPN names match UFCStats names."""
     stripped = unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode()
     return " ".join(stripped.lower().split())
+
+
+def main_card_bouts(top_n: int = 5) -> set[tuple[str, frozenset]]:
+    """Main-card bouts per event as {(event, frozenset{fighterA, fighterB})}.
+
+    UFCStats lists each event's bouts main-event-first, so the first `top_n` rows
+    of an event are its main card. Used to keep past predictions main-card-only.
+    Fighter names are normalized so the set also matches ESPN-sourced names.
+    """
+    results = load_results().copy()
+    results["EVENT"] = results["EVENT"].astype(str).str.strip()
+    results["BOUT"] = results["BOUT"].astype(str).str.strip()
+    main: set[tuple[str, frozenset]] = set()
+    for event, grp in results.groupby("EVENT", sort=False):
+        for bout in grp["BOUT"].head(top_n):
+            parts = re.split(r"\s+vs\.?\s+", bout)
+            if len(parts) == 2:
+                pair = frozenset((normalize_name(parts[0]), normalize_name(parts[1])))
+                main.add((event, pair))
+    return main
 
 
 # --------------------------------------------------------------------------- #

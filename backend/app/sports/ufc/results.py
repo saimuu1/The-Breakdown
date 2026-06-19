@@ -16,6 +16,8 @@ from datetime import date, timedelta
 
 import httpx
 
+from app.sports.ufc.cards import select_main_card
+
 logger = logging.getLogger(__name__)
 
 ESPN_SCOREBOARD = "https://site.api.espn.com/apis/site/v2/sports/mma/ufc/scoreboard"
@@ -79,7 +81,7 @@ def fetch_recent_events(days_back: int = 45, max_events: int = 3) -> list[dict]:
                 continue
 
             bouts = [
-                b for c in event.get("competitions", [])
+                b for c in select_main_card(event.get("competitions", []))
                 if (b := _parse_completed_bouts(c)) is not None
             ]
             if not bouts:

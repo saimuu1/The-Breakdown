@@ -23,7 +23,12 @@ import httpx
 import pandas as pd
 
 from app.repositories.supabase_repo import SupabaseRepository
-from app.sports.ufc.features import FEATURE_COLUMNS, build_training_frame, normalize_name
+from app.sports.ufc.features import (
+    FEATURE_COLUMNS,
+    build_training_frame,
+    main_card_bouts,
+    normalize_name,
+)
 from app.sports.ufc.model import predict_home_away
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -44,7 +49,16 @@ def main() -> int:
     cutoff = pd.Timestamp(date.today()) - pd.DateOffset(years=args.years)
     mask = meta["date"] >= cutoff
     idxs = list(meta.index[mask])
-    logger.info("Backfilling %d fights since %s", len(idxs), cutoff.date())
+
+    # Keep only main-card bouts (no prelims) — see main_card_bouts().
+    main = main_card_bouts()
+    idxs = [
+        i for i in idxs
+        if (str(meta.loc[i, "event"]).strip(),
+            frozenset((normalize_name(meta.loc[i, "home"]),
+                       normalize_name(meta.loc[i, "away"])))) in main
+    ]
+    logger.info("Backfilling %d main-card fights since %s", len(idxs), cutoff.date())
 
     repo = SupabaseRepository()
     tier = repo.sport_tier("ufc")

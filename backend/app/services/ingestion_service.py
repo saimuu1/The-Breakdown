@@ -72,7 +72,9 @@ def _ingest_match(
         try:
             edges = adapter.edges(features, raw.home, raw.away)
             system_prompt = getattr(adapter, "system_prompt", None)
-            extra = leaders_to_context(leaders, raw.home, raw.away)
+            extra = list(leaders_to_context(leaders, raw.home, raw.away) or [])
+            if hasattr(adapter, "analysis_context"):
+                extra += adapter.analysis_context(raw)
             analysis = generate_analysis(
                 raw.home, raw.away, probs, edges, llm,
                 system_prompt=system_prompt, extra_context=extra,

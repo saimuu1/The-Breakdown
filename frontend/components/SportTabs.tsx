@@ -1,13 +1,25 @@
 import Link from "next/link";
 
 const SPORTS: { id: string; label: string; soon?: boolean }[] = [
-  { id: "", label: "All" },
   { id: "ufc", label: "UFC" },
   { id: "soccer", label: "Soccer" },
   { id: "nba", label: "NBA" },
 ];
 
-export function SportTabs({ basePath, active }: { basePath: string; active: string }) {
+const ACTIVE: Record<string, string> = {
+  emerald: "border-emerald-500 bg-emerald-500/10 text-emerald-400",
+  violet: "border-violet-500 bg-violet-500/10 text-violet-300",
+};
+
+export function SportTabs({
+  basePath,
+  active,
+  accent = "emerald",
+}: {
+  basePath: string;
+  active: string;
+  accent?: "emerald" | "violet";
+}) {
   return (
     <div className="mb-6 flex flex-wrap gap-2">
       {SPORTS.map((s) => {
@@ -19,7 +31,7 @@ export function SportTabs({ basePath, active }: { basePath: string; active: stri
             href={href}
             className={`flex items-center gap-1.5 rounded-full border px-4 py-1.5 text-sm transition ${
               isActive
-                ? "border-emerald-500 bg-emerald-500/10 text-emerald-400"
+                ? ACTIVE[accent]
                 : "border-neutral-800 text-neutral-400 hover:border-neutral-600 hover:text-neutral-200"
             }`}
           >

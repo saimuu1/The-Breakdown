@@ -1,5 +1,5 @@
+import { GroupedPredictionGrid } from "@/components/GroupedPredictionGrid";
 import { Nav } from "@/components/Nav";
-import { PredictionGrid } from "@/components/PredictionGrid";
 import { SearchBar } from "@/components/SearchBar";
 import { SportTabs } from "@/components/SportTabs";
 import { getFavoriteMatchIds, getPastPredictions, type PredictionView } from "@/lib/queries";
@@ -16,18 +16,20 @@ function lastSeries(preds: PredictionView[]): PredictionView[] {
   );
 }
 
-/** Narrow to the most recent UFC card. Prefer the latest fight's event_name when
-   set; otherwise fall back to grouping by its date (one card = one date). */
-function latestCard(preds: PredictionView[]): { event: string | null; preds: PredictionView[] } {
+/** Narrow to the most recent UFC numbered / PPV card (e.g. "UFC 328", "UFC
+   Freedom 250") — the marquee events. Falls back to the latest card of any kind,
+   then to grouping by date. `preds` arrives most-recent-first. */
+function latestNumberedCard(
+  preds: PredictionView[],
+): { event: string | null; preds: PredictionView[] } {
   if (preds.length === 0) return { event: null, preds };
-  const top = preds[0].match;
-  if (top.event_name) {
-    return {
-      event: top.event_name,
-      preds: preds.filter((p) => p.match.event_name === top.event_name),
-    };
+  const isNumbered = (name: string | null) => !!name && !/fight night/i.test(name);
+  const target = preds.find((p) => isNumbered(p.match.event_name)) ?? preds[0];
+  const event = target.match.event_name;
+  if (event) {
+    return { event, preds: preds.filter((p) => p.match.event_name === event) };
   }
-  const day = top.starts_at.slice(0, 10);
+  const day = target.match.starts_at.slice(0, 10);
   return { event: null, preds: preds.filter((p) => p.match.starts_at.slice(0, 10) === day) };
 }
 
@@ -36,9 +38,10 @@ export default async function PastPage({
 }: {
   searchParams: Promise<{ sport?: string; q?: string; event?: string }>;
 }) {
-  const { sport = "", q = "", event = "" } = await searchParams;
+  const { sport: sportParam, q = "", event = "" } = await searchParams;
+  const sport = sportParam || "ufc"; // no "All" view — default to UFC
   const [all, favoriteIds] = await Promise.all([
-    getPastPredictions({ sport: sport || undefined, q: q || undefined, event: event || undefined }),
+    getPastPredictions({ sport, q: q || undefined, event: event || undefined }),
     getFavoriteMatchIds(),
   ]);
 
@@ -47,17 +50,10 @@ export default async function PastPage({
   let blurb = "Every pick we've published for events that have already happened — most recent first.";
   if (!q && !event) {
     if (sport === "ufc") {
-      const { event: latest, preds } = latestCard(all);
+      const { preds } = latestNumberedCard(all);
       predictions = preds;
-      if (latest) {
-        blurb = `Showing the latest card: ${latest}. Search a fighter to go further back.`;
-      } else if (preds.length) {
-        const when = new Date(preds[0].match.starts_at).toLocaleDateString("en-US", {
-          month: "long",
-          day: "numeric",
-          year: "numeric",
-        });
-        blurb = `Showing the latest card (${when}). Search a fighter to go further back.`;
+      if (preds.length) {
+        blurb = "Here's how the latest card shook out. Search any fighter or event to dig further back.";
       }
     } else if (sport === "nba") {
       predictions = lastSeries(all);
@@ -80,9 +76,9 @@ export default async function PastPage({
         </header>
 
         <SportTabs basePath="/past" active={sport} />
-        <SearchBar sport={sport} q={q} />
+        <SearchBar sport={sport} q={q} basePath="/past" />
 
-        <PredictionGrid
+        <GroupedPredictionGrid
           predictions={predictions}
           favoriteIds={favoriteIds}
           empty={

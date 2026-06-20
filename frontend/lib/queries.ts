@@ -38,30 +38,78 @@ function sortByStart(rows: PredictionView[]): PredictionView[] {
   );
 }
 
-/** All predictions the current user is allowed to see (RLS-gated), oldest first. */
-export async function getVisiblePredictions(): Promise<PredictionView[]> {
-  const supabase = await createClient();
-  const { data, error } = await supabase.from("predictions").select(SELECT);
+type DB = Awaited<ReturnType<typeof createClient>>;
+
+/** Fetch RLS-gated predictions for a set of match ids, restored to the given
+   order. We resolve match ids first (bounded) and fetch by id here, rather than
+   selecting every prediction — the predictions table is past PostgREST's
+   1000-row cap, so an unbounded select silently drops rows. */
+async function predictionsForMatches(db: DB, orderedIds: string[]): Promise<PredictionView[]> {
+  if (orderedIds.length === 0) return [];
+  const { data, error } = await db.from("predictions").select(SELECT).in("match_id", orderedIds);
   if (error) throw error;
-  return sortByStart((data ?? []) as unknown as PredictionView[]);
+  const byMatch = new Map<string, PredictionView>();
+  for (const p of (data ?? []) as unknown as PredictionView[]) byMatch.set(p.match.id, p);
+  return orderedIds.map((id) => byMatch.get(id)).filter(Boolean) as PredictionView[];
+}
+
+/** Match a prediction against free-text search: event name, either competitor,
+   or an "A vs B" pair. Used to filter the (bounded) upcoming set in-memory. */
+export function predictionMatchesQuery(p: PredictionView, query: string): boolean {
+  const s = query.trim().toLowerCase();
+  if (!s) return true;
+  const ev = (p.match.event_name ?? "").toLowerCase();
+  const home = p.match.home.name.toLowerCase();
+  const away = p.match.away.name.toLowerCase();
+  const parts = s.split(/\s+vs\.?\s+/).map((x) => x.trim()).filter(Boolean);
+  if (parts.length === 2) {
+    const [a, b] = parts;
+    const pairHit =
+      (home.includes(a) || away.includes(a)) && (home.includes(b) || away.includes(b));
+    return pairHit || ev.includes(s);
+  }
+  return ev.includes(s) || home.includes(s) || away.includes(s);
+}
+
+const UPCOMING_WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
+
+/** The upcoming board window: every card within ~the next month, plus marquee
+   PPV / numbered events beyond it (the big, heavily-promoted fights — e.g. an
+   Islam vs. Ian title bout months out). Fight Nights beyond the window wait
+   until they roll into it. */
+export function withinUpcomingWindow(predictions: PredictionView[]): PredictionView[] {
+  const cutoff = Date.now() + UPCOMING_WINDOW_MS;
+  return predictions.filter((p) => {
+    if (new Date(p.match.starts_at).getTime() <= cutoff) return true;
+    const event = p.match.event_name ?? "";
+    return !!event && !/fight night/i.test(event);
+  });
 }
 
 export type Timeframe = "upcoming" | "past";
 
-/** Predictions filtered to a timeframe and (optionally) a sport, correctly ordered. */
+/** Predictions filtered to a timeframe and (optionally) a sport, correctly
+   ordered (upcoming: soonest first; past: most recent first). */
 export async function getPredictions(
   timeframe: Timeframe,
   sport?: string,
+  limit = 400,
 ): Promise<PredictionView[]> {
-  const all = await getVisiblePredictions();
-  const now = Date.now();
-  let rows = all.filter((p) => {
-    const future = new Date(p.match.starts_at).getTime() >= now;
-    return timeframe === "upcoming" ? future : !future;
-  });
-  if (sport) rows = rows.filter((p) => p.match.league.sport_id === sport);
-  // Upcoming: soonest first. Past: most recent first.
-  return timeframe === "past" ? rows.reverse() : rows;
+  const supabase = await createClient();
+  const nowIso = new Date().toISOString();
+  const upcoming = timeframe === "upcoming";
+
+  let mq = supabase
+    .from("matches")
+    .select("id, leagues!inner(sport_id)")
+    .order("starts_at", { ascending: upcoming })
+    .limit(limit);
+  mq = upcoming ? mq.gte("starts_at", nowIso) : mq.lt("starts_at", nowIso);
+  if (sport) mq = mq.eq("leagues.sport_id", sport);
+
+  const { data } = await mq;
+  const order = ((data ?? []) as { id: string }[]).map((m) => m.id);
+  return predictionsForMatches(supabase, order);
 }
 
 export interface PastQuery {
@@ -87,44 +135,70 @@ export async function getPastPredictions({
   let order: string[] = [];
   const search = q?.trim();
 
-  if (search) {
-    const { data: comps } = await supabase
+  // A past-matches query scoped to the sport, newest first. Extra filters are
+  // chained by the caller.
+  const pastMatches = () => {
+    const mq = supabase
+      .from("matches")
+      .select("id, leagues!inner(sport_id)")
+      .lt("starts_at", nowIso)
+      .order("starts_at", { ascending: false })
+      .limit(limit);
+    return sport ? mq.eq("leagues.sport_id", sport) : mq;
+  };
+
+  const idsFor = async (name: string): Promise<string[]> => {
+    const { data } = await supabase
       .from("competitors")
       .select("id")
-      .ilike("name", `%${search}%`)
+      .ilike("name", `%${name}%`)
       .limit(80);
-    const ids = ((comps ?? []) as { id: string }[]).map((c) => c.id);
-    if (ids.length === 0) return [];
-    let mq = supabase
-      .from("matches")
-      .select("id, leagues!inner(sport_id)")
-      .lt("starts_at", nowIso)
-      .or(`home_id.in.(${ids.join(",")}),away_id.in.(${ids.join(",")})`)
-      .order("starts_at", { ascending: false })
-      .limit(limit);
-    if (sport) mq = mq.eq("leagues.sport_id", sport);
-    const { data } = await mq;
+    return ((data ?? []) as { id: string }[]).map((c) => c.id);
+  };
+
+  if (search) {
+    const matchIds = new Set<string>();
+    const add = (rows: { id: string }[] | null) => {
+      for (const m of rows ?? []) matchIds.add(m.id);
+    };
+
+    // 1) Event-name match (e.g. "UFC 328", "Freedom").
+    const { data: byEvent } = await pastMatches().ilike("event_name", `%${search}%`);
+    add(byEvent as { id: string }[] | null);
+
+    // 2) Fighter / team match. "A vs B" → both fighters must appear in the bout.
+    const parts = search.split(/\s+vs\.?\s+/i).map((s) => s.trim()).filter(Boolean);
+    if (parts.length === 2) {
+      const [idsA, idsB] = await Promise.all([idsFor(parts[0]), idsFor(parts[1])]);
+      if (idsA.length && idsB.length) {
+        const { data } = await pastMatches()
+          .or(`home_id.in.(${idsA.join(",")}),away_id.in.(${idsA.join(",")})`)
+          .or(`home_id.in.(${idsB.join(",")}),away_id.in.(${idsB.join(",")})`);
+        add(data as { id: string }[] | null);
+      }
+    } else {
+      const ids = await idsFor(search);
+      if (ids.length) {
+        const { data } = await pastMatches().or(
+          `home_id.in.(${ids.join(",")}),away_id.in.(${ids.join(",")})`,
+        );
+        add(data as { id: string }[] | null);
+      }
+    }
+
+    if (matchIds.size === 0) return [];
+
+    // Final ordered pass over the union (most recent first).
+    const { data } = await pastMatches().in("id", [...matchIds]);
     order = ((data ?? []) as { id: string }[]).map((m) => m.id);
   } else {
-    let mq = supabase
-      .from("matches")
-      .select("id, leagues!inner(sport_id)")
-      .lt("starts_at", nowIso)
-      .order("starts_at", { ascending: false })
-      .limit(limit);
-    if (sport) mq = mq.eq("leagues.sport_id", sport);
+    let mq = pastMatches();
     if (event) mq = mq.eq("event_name", event);
     const { data } = await mq;
     order = ((data ?? []) as { id: string }[]).map((m) => m.id);
   }
 
-  if (order.length === 0) return [];
-
-  const { data, error } = await supabase.from("predictions").select(SELECT).in("match_id", order);
-  if (error) throw error;
-  const byMatch = new Map<string, PredictionView>();
-  for (const p of (data ?? []) as unknown as PredictionView[]) byMatch.set(p.match.id, p);
-  return order.map((id) => byMatch.get(id)).filter(Boolean) as PredictionView[];
+  return predictionsForMatches(supabase, order);
 }
 
 /** A single prediction by match id, or null if not visible / not found. */
@@ -150,8 +224,9 @@ export async function getFavoriteMatchIds(): Promise<Set<string>> {
 export async function getFavoritePredictions(): Promise<PredictionView[]> {
   const favs = await getFavoriteMatchIds();
   if (favs.size === 0) return [];
-  const all = await getVisiblePredictions();
-  return all.filter((p) => favs.has(p.match.id));
+  const supabase = await createClient();
+  const rows = await predictionsForMatches(supabase, [...favs]);
+  return sortByStart(rows);
 }
 
 /** Stored feature differentials for a match (sport-specific inputs). */

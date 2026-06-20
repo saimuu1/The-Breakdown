@@ -21,7 +21,12 @@ from app.config import get_settings
 from app.llm.persona import PERSONA_VERSION, top_edges
 from app.repositories.supabase_repo import SupabaseRepository
 from app.services.analysis_service import generate_analysis
-from app.sports.ufc.features import build_current_forms, diff_features, normalize_name
+from app.sports.ufc.features import (
+    build_current_forms,
+    diff_features,
+    normalize_name,
+    recent_results,
+)
 from app.sports.ufc.model import predict_home_away
 from app.sports.ufc.results import fetch_recent_events
 
@@ -34,8 +39,9 @@ MODEL_VERSION = "ufc-v1"
 
 def _backfill_event(event: dict, repo: SupabaseRepository, tier: str, llm) -> int:
     """Write predictions (+ result, + analysis) for one event. Returns bouts written."""
-    # Point-in-time forms: each fighter's career form as of the event date.
+    # Point-in-time forms + recent results as of the event date (no leakage).
     forms = {normalize_name(n): f for n, f in build_current_forms(event["date"]).items()}
+    recent = recent_results(event["date"])
     league_id = repo.ensure_league("ufc", "ufc")
     written = 0
 
@@ -66,7 +72,12 @@ def _backfill_event(event: dict, repo: SupabaseRepository, tier: str, llm) -> in
         if llm is not None and repo.current_analysis_version(prediction_id) != PERSONA_VERSION:
             try:
                 edges = top_edges(features, home, away)
-                analysis = generate_analysis(home, away, probs, edges, llm)
+                extra = [
+                    f"{nm} recent fights: " + "; ".join(recent[normalize_name(nm)])
+                    for nm in (home, away)
+                    if recent.get(normalize_name(nm))
+                ]
+                analysis = generate_analysis(home, away, probs, edges, llm, extra_context=extra)
                 repo.save_analysis(prediction_id, analysis.text, analysis.version)
                 time.sleep(_LLM_THROTTLE_SECONDS)
             except Exception:

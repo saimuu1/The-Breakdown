@@ -1,10 +1,18 @@
 import Link from "next/link";
 
+import { FightCard } from "@/components/FightCard";
+import { GroupedPredictionGrid } from "@/components/GroupedPredictionGrid";
 import { Nav } from "@/components/Nav";
-import { PredictionGrid } from "@/components/PredictionGrid";
 import { RealtimeRefresher } from "@/components/RealtimeRefresher";
+import { SearchBar } from "@/components/SearchBar";
 import { SportTabs } from "@/components/SportTabs";
-import { getFavoriteMatchIds, getPredictions } from "@/lib/queries";
+import { isMarqueeFight } from "@/lib/marquee";
+import {
+  getFavoriteMatchIds,
+  getPredictions,
+  predictionMatchesQuery,
+  withinUpcomingWindow,
+} from "@/lib/queries";
 import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic"; // always reflect the current user's RLS view
@@ -12,13 +20,25 @@ export const dynamic = "force-dynamic"; // always reflect the current user's RLS
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ sport?: string }>;
+  searchParams: Promise<{ sport?: string; q?: string }>;
 }) {
-  const { sport = "" } = await searchParams;
-  const [predictions, favoriteIds] = await Promise.all([
-    getPredictions("upcoming", sport || undefined),
+  const { sport: sportParam, q = "" } = await searchParams;
+  const sport = sportParam || "ufc"; // no "All" view — default to UFC
+  const [all, favoriteIds] = await Promise.all([
+    getPredictions("upcoming", sport),
     getFavoriteMatchIds(),
   ]);
+
+  const search = q.trim();
+  const windowed = search
+    ? all.filter((p) => predictionMatchesQuery(p, search))
+    : withinUpcomingWindow(all);
+
+  // Pin marquee fights (champions, megastars, famous undefeated) to the top.
+  // Not while searching — a search should return exactly what was asked for.
+  const spotlight = search ? [] : windowed.filter(isMarqueeFight);
+  const spotlightIds = new Set(spotlight.map((p) => p.id));
+  const predictions = windowed.filter((p) => !spotlightIds.has(p.id));
 
   const supabase = await createClient();
   const {
@@ -26,23 +46,62 @@ export default async function DashboardPage({
   } = await supabase.auth.getUser();
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-neutral-100">
+    <div className="min-h-screen bg-[#070810] text-neutral-100">
       <Nav />
       <RealtimeRefresher />
       <main className="mx-auto max-w-5xl px-6 py-10">
-        <header className="mb-6">
-          <h1 className="text-3xl font-bold tracking-tight">Upcoming</h1>
-          <p className="mt-1 text-neutral-400">
-            Win probabilities and a plain-English breakdown for the fights and games ahead.
+        <header className="mb-8">
+          <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-300">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+            The board
+          </span>
+          <h1 className="mt-4 text-5xl font-bold tracking-tight">Upcoming</h1>
+          <p className="mt-3 max-w-xl text-lg text-neutral-400">
+            {search
+              ? `Upcoming results for “${search}”.`
+              : "We already called every fight. Here's who wins — and exactly why."}
           </p>
         </header>
 
         <SportTabs basePath="/dashboard" active={sport} />
+        <SearchBar
+          sport={sport}
+          q={q}
+          basePath="/dashboard"
+          placeholder="Search an upcoming fighter, team, or event…"
+        />
 
-        <PredictionGrid
+        {spotlight.length > 0 && (
+          <section className="mb-12">
+            <div className="mb-5 flex items-center gap-2">
+              <span className="text-lg">🔥</span>
+              <h2 className="text-xl font-bold tracking-tight text-neutral-100">Spotlight</h2>
+              <span className="text-sm text-neutral-500">— the can&apos;t-miss fights</span>
+            </div>
+            <div className="grid gap-4">
+              {spotlight.map((p) => (
+                <FightCard
+                  key={p.id}
+                  p={p}
+                  favorited={favoriteIds.has(p.match.id)}
+                  spotlight
+                />
+              ))}
+            </div>
+          </section>
+        )}
+
+        <GroupedPredictionGrid
           predictions={predictions}
           favoriteIds={favoriteIds}
-          empty={<EmptyMessage sport={sport} loggedIn={!!user} />}
+          variant="premium"
+          empty={
+            search ? (
+              <p className="text-neutral-300">No upcoming predictions match “{search}”.</p>
+            ) : (
+              <EmptyMessage sport={sport} loggedIn={!!user} />
+            )
+          }
         />
       </main>
     </div>

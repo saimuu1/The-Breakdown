@@ -10,10 +10,13 @@ export function TeamCrest({
   name,
   logoUrl,
   size = 28,
+  cover = false,
 }: {
   name: string;
   logoUrl?: string | null;
   size?: number;
+  /** Crop to a filled circle (for fighter headshots) instead of contain. */
+  cover?: boolean;
 }) {
   const [failed, setFailed] = useState(false);
   const initials = name
@@ -32,7 +35,7 @@ export function TeamCrest({
         width={size}
         height={size}
         onError={() => setFailed(true)}
-        className="shrink-0 object-contain"
+        className={`shrink-0 ${cover ? "rounded-full object-cover" : "object-contain"}`}
         style={{ width: size, height: size }}
       />
     );

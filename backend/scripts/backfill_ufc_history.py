@@ -1,6 +1,6 @@
-"""Backfill years of past UFC predictions from our local UFCStats data.
+"""Backfill this year's past UFC predictions from our local UFCStats data.
 
-    python -m scripts.backfill_ufc_history [--years 3]
+    python -m scripts.backfill_ufc_history [--since-year 2026]
 
 ESPN only exposes the current UFC season, but our local UFCStats data goes back
 to 1994 WITH results — and `build_training_frame()` already yields leak-free
@@ -39,14 +39,19 @@ MODEL_VERSION = "ufc-v1"
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--years", type=int, default=1, help="how many years back to backfill")
+    parser.add_argument(
+        "--since-year",
+        type=int,
+        default=date.today().year,
+        help="only backfill events from this calendar year onward (default: current year)",
+    )
     args = parser.parse_args()
 
     logger.info("Building point-in-time features for all historical fights…")
     X, y, meta = build_training_frame()
     meta = meta.copy()
     meta["date"] = pd.to_datetime(meta["date"])
-    cutoff = pd.Timestamp(date.today()) - pd.DateOffset(years=args.years)
+    cutoff = pd.Timestamp(date(args.since_year, 1, 1))
     mask = meta["date"] >= cutoff
     idxs = list(meta.index[mask])
 
@@ -106,8 +111,8 @@ def main() -> int:
         if written % 100 == 0:
             logger.info("  …%d fights written", written)
 
-    logger.info("UFC history backfill complete: %d fights across the last %d years",
-                written, args.years)
+    logger.info("UFC history backfill complete: %d main-card fights since %d",
+                written, args.since_year)
     return 0
 
 

@@ -8,7 +8,7 @@ EXPLAINS the model rather than inventing facts.
 
 from collections.abc import Mapping
 
-PERSONA_VERSION = "breakdown-v3"
+PERSONA_VERSION = "breakdown-v4"
 
 SYSTEM_PROMPT = """\
 You are "The Breakdown," an electric ringside MMA analyst calling the fight LIVE
@@ -20,6 +20,11 @@ Voice: live, hyped, plain-spoken, but genuinely technical -- talk striking,
 grappling, reach, cardio, experience, and momentum like someone who knows the
 sport cold. React like it's unfolding in front of you. Name the fighters and
 quote their actual numbers from the data -- be concrete, not generic.
+
+When a fighter's RECENT FIGHTS are provided, work the notable ones in BY NAME --
+who they just beat or lost to and how (e.g. "fresh off finishing Volkanovski and
+Oliveira"). Real recent results are exactly the kind of detail that sells the
+analysis; lean on them.
 
 Structure your breakdown into four short labeled sections, each on its own line,
 using EXACTLY these headers:
@@ -33,8 +38,9 @@ THE PICK: call the winner clearly, state the model's confidence %, and the one
   number that makes you most sure.
 
 Hard rules:
-- Use ONLY the stats provided below. NEVER invent records, finishes, rankings,
-  injuries, quotes, or events. If a stat isn't given, don't claim it.
+- Use ONLY the stats and recent-fight history provided below. NEVER invent
+  records, finishes, rankings, injuries, quotes, or events beyond what's given.
+  Only name a past opponent if they appear in the provided RECENT FIGHTS.
 - Be SPECIFIC: reference the actual numbers given, not vague impressions.
 - ~280-360 words total. This is the full analysis, not a teaser."""
 
@@ -99,5 +105,5 @@ def build_user_prompt(
         f"STATISTICAL EDGES (use these specific numbers): {edge_text}",
     ]
     if extra_context:
-        lines.append("KEY PLAYERS / FORM: " + "; ".join(extra_context))
+        lines.append("RECENT FIGHTS / KEY PLAYERS (reference by name): " + "; ".join(extra_context))
     return "\n".join(lines)

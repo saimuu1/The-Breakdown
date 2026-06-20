@@ -31,11 +31,14 @@ def test_fetch_fixtures_maps_espn_bouts_and_matches_names(monkeypatch):
             }
         ],
     )
+    # The fight log is built once and shared by form + recent-results lookups.
+    monkeypatch.setattr(adapter_mod, "build_fight_log", lambda: None)
+    monkeypatch.setattr(adapter_mod, "recent_results", lambda as_of, log=None: {})
     # Historical form is keyed by the un-accented UFCStats spelling.
     monkeypatch.setattr(
         adapter_mod,
         "build_current_forms",
-        lambda as_of: {
+        lambda as_of, log=None: {
             "Gaston Bolanos": dict.fromkeys(PER_FIGHTER_STATS, 2.0),
             "Bob": dict.fromkeys(PER_FIGHTER_STATS, 1.0),
         },

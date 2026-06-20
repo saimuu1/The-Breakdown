@@ -51,19 +51,22 @@ def normalize_name(name: str) -> str:
 
 
 def main_card_bouts(top_n: int = 5) -> set[tuple[str, frozenset]]:
-    """Main-card bouts per event as {(event, frozenset{fighterA, fighterB})}.
+    """Main-card men's bouts per event as {(event, frozenset{fighterA, fighterB})}.
 
     UFCStats lists each event's bouts main-event-first, so the first `top_n` rows
-    of an event are its main card. Used to keep past predictions main-card-only.
-    Fighter names are normalized so the set also matches ESPN-sourced names.
+    of an event are its main card. Women's bouts are excluded. Used to keep past
+    predictions main-card-only. Fighter names are normalized so the set also
+    matches ESPN-sourced names.
     """
     results = load_results().copy()
     results["EVENT"] = results["EVENT"].astype(str).str.strip()
     results["BOUT"] = results["BOUT"].astype(str).str.strip()
     main: set[tuple[str, frozenset]] = set()
     for event, grp in results.groupby("EVENT", sort=False):
-        for bout in grp["BOUT"].head(top_n):
-            parts = re.split(r"\s+vs\.?\s+", bout)
+        for row in grp.head(top_n).itertuples(index=False):
+            if "women" in str(row.WEIGHTCLASS).lower():
+                continue  # women's fights are not displayed
+            parts = re.split(r"\s+vs\.?\s+", row.BOUT)
             if len(parts) == 2:
                 pair = frozenset((normalize_name(parts[0]), normalize_name(parts[1])))
                 main.add((event, pair))
@@ -238,6 +241,43 @@ def build_current_forms(as_of, log: pd.DataFrame | None = None) -> dict[str, dic
             _update_accumulator(acc, row)
         forms[fighter] = _form_from_accumulator(acc, as_of, tott_map.get(fighter, {}))
     return forms
+
+
+def _short_method(method: str) -> str:
+    """Condense a UFCStats method string to KO/TKO, submission, or decision."""
+    m = str(method).lower()
+    if "ko" in m or "tko" in m:
+        return "KO/TKO"
+    if "sub" in m:
+        return "submission"
+    if "dec" in m:
+        return "decision"
+    return ""
+
+
+def recent_results(as_of, log: pd.DataFrame | None = None, n: int = 5) -> dict[str, list[str]]:
+    """Each fighter's most recent results strictly before `as_of`, newest first,
+    keyed by normalized name:
+
+        {"ilia topuria": ["def. Alexander Volkanovski by KO/TKO (2024)", ...]}
+
+    Point-in-time (only prior fights) so past write-ups never reference a result
+    that hadn't happened yet. Feeds the analyst real opponents to name-drop.
+    """
+    log = build_fight_log() if log is None else log
+    as_of = pd.Timestamp(as_of)
+    past = log[log["date"] < as_of]
+
+    out: dict[str, list[str]] = {}
+    for fighter, group in past.groupby("fighter", sort=False):
+        lines: list[str] = []
+        for r in group.sort_values("date", ascending=False).head(n).itertuples(index=False):
+            verb = "def." if r.won else "lost to"
+            method = _short_method(r.method)
+            suffix = f" by {method}" if method else ""
+            lines.append(f"{verb} {r.opponent}{suffix} ({r.date.year})")
+        out[normalize_name(fighter)] = lines
+    return out
 
 
 def diff_features(

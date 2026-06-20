@@ -10,8 +10,14 @@ from datetime import UTC, datetime
 
 from app.llm.persona import top_edges
 from app.sports.base import RawMatch, register
-from app.sports.ufc.features import build_current_forms, diff_features, normalize_name
+from app.sports.ufc.features import (
+    build_current_forms,
+    diff_features,
+    normalize_name,
+    recent_results,
+)
 from app.sports.ufc.model import predict_home_away
+from app.sports.ufc.raw import build_fight_log
 from app.sports.ufc.upcoming import fetch_upcoming_bouts
 
 
@@ -21,11 +27,15 @@ class UFCAdapter:
 
     def __init__(self) -> None:
         self._forms: dict[str, dict] = {}  # keyed by normalized fighter name
+        self._recent: dict[str, list[str]] = {}  # recent fights, keyed by normalized name
 
     def fetch_fixtures(self) -> list[RawMatch]:
         bouts = fetch_upcoming_bouts()
-        forms = build_current_forms(datetime.now(UTC).date())
+        today = datetime.now(UTC).date()
+        log = build_fight_log()  # built once, shared by form + recent-results
+        forms = build_current_forms(today, log)
         self._forms = {normalize_name(name): form for name, form in forms.items()}
+        self._recent = recent_results(today, log)
 
         fixtures: list[RawMatch] = []
         for b in bouts:
@@ -39,6 +49,8 @@ class UFCAdapter:
                         "home": b["home"],
                         "away": b["away"],
                         "event_name": b.get("event_name"),
+                        "home_logo": b.get("home_logo"),
+                        "away_logo": b.get("away_logo"),
                     },
                 )
             )
@@ -55,6 +67,15 @@ class UFCAdapter:
     def edges(self, features: dict, home: str, away: str) -> list[str]:
         """Human-readable grounding for the persona — optional adapter capability."""
         return top_edges(features, home, away, n=8)
+
+    def analysis_context(self, m: RawMatch) -> list[str]:
+        """Each fighter's recent results, so the write-up can name real past fights."""
+        lines: list[str] = []
+        for name in (m.home, m.away):
+            history = self._recent.get(normalize_name(name))
+            if history:
+                lines.append(f"{name} recent fights: " + "; ".join(history))
+        return lines
 
 
 adapter = UFCAdapter()

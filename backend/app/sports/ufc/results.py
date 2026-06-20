@@ -16,7 +16,7 @@ from datetime import date, timedelta
 
 import httpx
 
-from app.sports.ufc.cards import select_main_card
+from app.sports.ufc.cards import fetch_event_card_meta, is_womens_bout, select_main_card
 
 logger = logging.getLogger(__name__)
 
@@ -42,6 +42,8 @@ def _parse_completed_bouts(comp: dict) -> dict | None:
     state = comp.get("status", {}).get("type", {}).get("state")
     if state != "post":
         return None
+    if is_womens_bout(comp):
+        return None  # women's fights are not displayed
 
     competitors = comp.get("competitors", [])
     parsed = []
@@ -80,8 +82,9 @@ def fetch_recent_events(days_back: int = 45, max_events: int = 3) -> list[dict]:
             if event_id in seen_event_ids:
                 continue
 
+            meta = fetch_event_card_meta(event.get("id"))
             bouts = [
-                b for c in select_main_card(event.get("competitions", []))
+                b for c in select_main_card(event.get("competitions", []), meta)
                 if (b := _parse_completed_bouts(c)) is not None
             ]
             if not bouts:

@@ -7,6 +7,7 @@ rather than crashing the run.
 """
 
 import logging
+import re
 import time
 from datetime import date, timedelta
 
@@ -15,7 +16,15 @@ import httpx
 logger = logging.getLogger(__name__)
 
 ESPN_WC_BASE = "https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard"
-_LOOKAHEAD_DAYS = 3
+_LOOKAHEAD_DAYS = 30
+
+# Knockout fixtures list placeholder "teams" until the bracket resolves
+# (e.g. "Group C Winner", "Third Place Group A/B/C/D/F"). Don't show those.
+_PLACEHOLDER = re.compile(r"\b(group|winner|runner|place|2nd|3rd|third)\b", re.IGNORECASE)
+
+
+def _is_placeholder(name: str | None) -> bool:
+    return not name or bool(_PLACEHOLDER.search(name))
 
 
 def _get(url: str, retries: int = 4, timeout: float = 15.0) -> dict:
@@ -76,6 +85,9 @@ def _parse_pre_matches(data: dict) -> list[dict]:
                 else:
                     continue
 
+            if _is_placeholder(home_name) or _is_placeholder(away_name):
+                continue  # knockout placeholder — not a decided matchup yet
+
             matches.append({
                 "home": home_name,
                 "away": away_name,
@@ -89,7 +101,11 @@ def _parse_pre_matches(data: dict) -> list[dict]:
 
 
 def fetch_upcoming_matches(lookahead: int = _LOOKAHEAD_DAYS) -> list[dict]:
-    """Return upcoming World Cup matches across today + next `lookahead` days."""
+    """Return all upcoming World Cup matches across today + next `lookahead` days.
+
+    Unlike a single next-card pull, we sweep the whole window so every announced
+    matchday shows on the board (knockout placeholders are filtered upstream).
+    """
     seen: set[str] = set()
     all_matches: list[dict] = []
 
@@ -108,10 +124,8 @@ def fetch_upcoming_matches(lookahead: int = _LOOKAHEAD_DAYS) -> list[dict]:
                 seen.add(key)
                 all_matches.append(m)
 
-        if all_matches:
-            # Stop as soon as we have at least one day of upcoming fixtures.
-            break
-
     if not all_matches:
         logger.info("No upcoming World Cup fixtures found in the next %d days", lookahead)
+    else:
+        logger.info("World Cup upcoming: %d matches over %d days", len(all_matches), lookahead)
     return all_matches

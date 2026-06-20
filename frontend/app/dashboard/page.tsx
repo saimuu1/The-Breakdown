@@ -34,9 +34,11 @@ export default async function DashboardPage({
     ? all.filter((p) => predictionMatchesQuery(p, search))
     : withinUpcomingWindow(all);
 
-  // Pin marquee fights (champions, megastars, famous undefeated) to the top.
+  // Pin the soonest marquee matchups (champions, megastars, big nations) to the
+  // top — capped so the Spotlight stays a tight "can't-miss" strip, not a wall.
   // Not while searching — a search should return exactly what was asked for.
-  const spotlight = search ? [] : windowed.filter(isMarqueeFight);
+  const SPOTLIGHT_MAX = 5;
+  const spotlight = search ? [] : windowed.filter(isMarqueeFight).slice(0, SPOTLIGHT_MAX);
   const spotlightIds = new Set(spotlight.map((p) => p.id));
   const predictions = windowed.filter((p) => !spotlightIds.has(p.id));
 
@@ -59,7 +61,7 @@ export default async function DashboardPage({
           <p className="mt-3 max-w-xl text-lg text-neutral-400">
             {search
               ? `Upcoming results for “${search}”.`
-              : "We already called every fight. Here's who wins — and exactly why."}
+              : "We already called every matchup. Here's who wins — and exactly why."}
           </p>
         </header>
 
@@ -76,7 +78,7 @@ export default async function DashboardPage({
             <div className="mb-5 flex items-center gap-2">
               <span className="text-lg">🔥</span>
               <h2 className="text-xl font-bold tracking-tight text-neutral-100">Spotlight</h2>
-              <span className="text-sm text-neutral-500">— the can&apos;t-miss fights</span>
+              <span className="text-sm text-neutral-500">— the can&apos;t-miss matchups</span>
             </div>
             <div className="grid gap-4">
               {spotlight.map((p) => (

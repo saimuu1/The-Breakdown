@@ -45,6 +45,23 @@ const MARQUEE_FIGHTERS = new Set(
   ].map(normalize),
 );
 
+/** Top-10 national teams. A World Cup match between TWO of them is a heavyweight
+   clash — highlighted in place (not pinned), so it stands out on its matchday. */
+const TOP_TEN_TEAMS = new Set(
+  [
+    "Argentina",
+    "France",
+    "Spain",
+    "England",
+    "Brazil",
+    "Portugal",
+    "Netherlands",
+    "Germany",
+    "Belgium",
+    "Italy",
+  ].map(normalize),
+);
+
 /** Lowercase, accent-insensitive key (NFKD + drop non-ASCII) so curated names
    match ESPN's spellings regardless of diacritics. */
 function normalize(name: string): string {
@@ -55,10 +72,20 @@ function normalize(name: string): string {
     .trim();
 }
 
-/** A bout is spotlight-worthy if either fighter is a marquee name. */
+/** Spotlight-worthy (pinned to the top) — UFC only: a marquee fighter is in it. */
 export function isMarqueeFight(p: PredictionView): boolean {
+  if (p.match.league.sport_id !== "ufc") return false;
   return (
     MARQUEE_FIGHTERS.has(normalize(p.match.home.name)) ||
     MARQUEE_FIGHTERS.has(normalize(p.match.away.name))
+  );
+}
+
+/** A soccer match between two top-10 sides — gets a standout accent in place. */
+export function isTopTenClash(p: PredictionView): boolean {
+  if (p.match.league.sport_id !== "soccer") return false;
+  return (
+    TOP_TEN_TEAMS.has(normalize(p.match.home.name)) &&
+    TOP_TEN_TEAMS.has(normalize(p.match.away.name))
   );
 }

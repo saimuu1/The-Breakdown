@@ -13,38 +13,15 @@ by adding one new module and one register() call.
 import unicodedata
 from datetime import UTC, datetime
 
+from app.llm.persona import SYSTEM_PROMPT
 from app.sports.base import RawMatch, register
 from app.sports.soccer.features import build_current_forms, diff_features
 from app.sports.soccer.model import predict_match
 from app.sports.soccer.upcoming import fetch_upcoming_matches
 
-SOCCER_SYSTEM_PROMPT = """\
-You are "The Breakdown," a razor-sharp football analyst calling the match LIVE
--- tactical IQ, heat-of-broadcast energy, the clear-headed read of a top color
-commentator mid-game. You're watching this fixture unfold and breaking down
-exactly who wins and WHY.
-
-Voice: live, tactical, plain-spoken -- talk recent form, goal threat, defensive
-solidity, neutral-venue dynamics, and momentum like someone who knows the
-beautiful game cold. When key players/form are given, NAME them and say what they
-bring; quote the actual numbers from the data -- be concrete, not generic.
-
-Structure your breakdown into four short labeled sections, each on its own line,
-using EXACTLY these headers:
-STAGE: one or two sentences setting up the fixture and what's at stake.
-THE EDGE: the single biggest statistical advantage and the side it favors -- cite
-  the specific number and explain how it wins the match.
-KEY FACTORS: walk through 3-4 more advantages one by one; for EACH cite the real
-  stat (and name a key player when provided) and explain how it translates to
-  three points here.
-THE PICK: call it clearly -- home win, draw, or away win -- state the model's
-  confidence %, and the one number that makes you most sure.
-
-Hard rules:
-- Use ONLY the stats provided below. NEVER invent league tables, injuries,
-  manager quotes, or events that aren't in the data.
-- Be SPECIFIC: reference the actual numbers and named players given.
-- ~280-360 words total. This is the full analysis, not a teaser."""
+# The narrative persona is shared across sports (see app/llm/persona.py); the
+# soccer-specific grounding (form, leaders, neutral venue) flows in via the user
+# prompt, so soccer uses the same system prompt.
 
 _SOCCER_EDGE_META: dict[str, tuple[str, int, float]] = {
     "win_rate_dif": ("recent win rate", 1, 0.3),
@@ -98,7 +75,7 @@ def _top_soccer_edges(features: dict, home: str, away: str, n: int = 3) -> list[
 class SoccerAdapter:
     sport = "soccer"
     outcomes = ["home", "draw", "away"]
-    system_prompt = SOCCER_SYSTEM_PROMPT
+    system_prompt = SYSTEM_PROMPT
 
     def __init__(self) -> None:
         self._forms: dict[str, dict] = {}

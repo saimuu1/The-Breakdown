@@ -19,6 +19,11 @@ function formatDate(iso: string): string {
   });
 }
 
+/** Drop a leading section header (e.g. "THE STORY:") so the teaser reads as prose. */
+function teaser(text: string): string {
+  return text.replace(/^\s*[A-Z][A-Z '’-]{2,40}:\s*/, "");
+}
+
 /** The model's favored outcome key (e.g. "home"), for grading past picks. */
 function modelPick(probs: Record<string, number>): string {
   return Object.entries(probs).reduce((a, b) => (b[1] > a[1] ? b : a))[0];
@@ -80,7 +85,7 @@ export function PredictionCard({ p, favorited = false }: { p: PredictionView; fa
       {p.analysis && (
         <p className="mt-4 line-clamp-3 text-sm leading-relaxed text-neutral-400">
           <span className="font-semibold text-emerald-400">The Breakdown: </span>
-          {p.analysis}
+          {teaser(p.analysis)}
         </p>
       )}
     </Link>

@@ -1,8 +1,16 @@
-// Renders "The Breakdown" write-up. The v3 persona emits labeled sections
-// (STAGE / THE EDGE / KEY FACTORS / THE PICK); we parse them into styled blocks
-// and gracefully fall back to plain prose for older (unlabeled) analyses.
+// Renders "The Breakdown" write-up. The current (v5) persona emits labeled
+// sections (THE STORY / THE KEY TO THE MATCHUP / THE PICK); older personas used
+// STAGE / THE EDGE / KEY FACTORS / THE PICK. We parse either into styled blocks
+// and gracefully fall back to plain prose for unlabeled analyses.
 
-const SECTIONS = ["STAGE", "THE EDGE", "KEY FACTORS", "THE PICK"] as const;
+const SECTIONS = [
+  "THE STORY",
+  "THE KEY TO THE MATCHUP",
+  "STAGE",
+  "THE EDGE",
+  "KEY FACTORS",
+  "THE PICK",
+] as const;
 
 function parseSections(text: string): { heading: string; body: string }[] | null {
   const found: { heading: string; body: string }[] = [];

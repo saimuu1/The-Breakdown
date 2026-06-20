@@ -65,8 +65,8 @@ class UFCAdapter:
         return predict_home_away(features)
 
     def edges(self, features: dict, home: str, away: str) -> list[str]:
-        """Human-readable grounding for the persona — optional adapter capability."""
-        return top_edges(features, home, away, n=8)
+        """A few key differentials to support (not drive) the narrative analysis."""
+        return top_edges(features, home, away, n=5)
 
     def analysis_context(self, m: RawMatch) -> list[str]:
         """Each fighter's recent results, so the write-up can name real past fights."""

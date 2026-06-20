@@ -22,6 +22,11 @@ function pct(probs: Record<string, number>, key: string): number {
   return Math.round((probs[key] ?? 0) * 100);
 }
 
+/** Drop a leading section header (e.g. "THE STORY:") so the teaser reads as prose. */
+function teaser(text: string): string {
+  return text.replace(/^\s*[A-Z][A-Z '’-]{2,40}:\s*/, "");
+}
+
 function Side({
   name,
   logoUrl,
@@ -175,7 +180,7 @@ export function FightCard({
       {p.analysis && (
         <p className="mt-4 line-clamp-2 text-sm leading-relaxed text-neutral-400">
           <span className={`font-semibold ${accent.text}`}>The Breakdown: </span>
-          {p.analysis}
+          {teaser(p.analysis)}
         </p>
       )}
     </Link>

@@ -2,7 +2,12 @@ import { GroupedPredictionGrid } from "@/components/GroupedPredictionGrid";
 import { Nav } from "@/components/Nav";
 import { SearchBar } from "@/components/SearchBar";
 import { SportTabs } from "@/components/SportTabs";
-import { getFavoriteMatchIds, getPastPredictions, type PredictionView } from "@/lib/queries";
+import {
+  getFavoriteMatchIds,
+  getPastPredictions,
+  predictionMatchesQuery,
+  type PredictionView,
+} from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
 
@@ -36,14 +41,25 @@ export default async function PastPage({
 }) {
   const { sport: sportParam, q = "", event = "" } = await searchParams;
   const sport = sportParam || "ufc";
+
+  // Always load the full recent past — search is done in-memory below so
+  // every team / fighter name is findable without a round-trip per query.
   const [all, favoriteIds] = await Promise.all([
-    getPastPredictions({ sport, q: q || undefined, event: event || undefined }),
+    getPastPredictions({ sport, event: event || undefined }),
     getFavoriteMatchIds(),
   ]);
 
+  const search = q.trim();
   let predictions = all;
   let blurb = "Every pick we've published for events that have already happened — most recent first.";
-  if (!q && !event) {
+
+  if (search) {
+    predictions = all.filter((p) => predictionMatchesQuery(p, search));
+    blurb = `Results for "${search}".`;
+  } else if (event) {
+    blurb = `Showing event: ${event}.`;
+  } else {
+    // Smart defaults when not searching
     if (sport === "ufc") {
       const { preds } = latestNumberedCard(all);
       predictions = preds;
@@ -57,8 +73,6 @@ export default async function PastPage({
         blurb = `Showing the last series: ${m.home.name} vs ${m.away.name}. Search a team for more.`;
       }
     }
-  } else if (q) {
-    blurb = `Results for "${q}".`;
   }
 
   return (
@@ -82,12 +96,15 @@ export default async function PastPage({
           predictions={predictions}
           favoriteIds={favoriteIds}
           empty={
-            q ? (
+            search ? (
               <div>
-                <p className="text-[#b0b8d0]">No past predictions for &ldquo;{q}&rdquo;.</p>
+                <p className="text-[#b0b8d0]">No past predictions for &ldquo;{search}&rdquo;.</p>
                 <p className="mt-1 text-sm text-[#5a607a]">
                   They may not have played yet —{" "}
-                  <a href={`/dashboard?sport=${sport}&q=${encodeURIComponent(q)}`} className="text-emerald-400 hover:underline">
+                  <a
+                    href={`/dashboard?sport=${sport}&q=${encodeURIComponent(search)}`}
+                    className="text-emerald-400 hover:underline"
+                  >
                     check Upcoming
                   </a>.
                 </p>

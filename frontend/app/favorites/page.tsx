@@ -19,12 +19,12 @@ export default async function FavoritesPage() {
   ]);
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-neutral-100">
+    <div className="min-h-screen bg-[#07090e] text-[#e4e7f0]">
       <Nav />
-      <main className="mx-auto max-w-5xl px-6 py-10">
-        <header className="mb-6">
-          <h1 className="text-3xl font-bold tracking-tight">Favorites</h1>
-          <p className="mt-1 text-neutral-400">The matchups you&apos;re tracking, all in one place.</p>
+      <main className="mx-auto max-w-5xl px-6 py-12">
+        <header className="mb-8">
+          <h1 className="text-4xl font-bold tracking-tight" style={{ fontFamily: "var(--font-syne), system-ui, sans-serif" }}>Favorites</h1>
+          <p className="mt-2 text-[#5a607a]">The matchups you&apos;re tracking, all in one place.</p>
         </header>
 
         <PredictionGrid
@@ -32,7 +32,7 @@ export default async function FavoritesPage() {
           favoriteIds={favoriteIds}
           empty={
             user ? (
-              <p className="text-neutral-300">
+              <p className="text-[#b0b8d0]">
                 No favorites yet — tap the ☆ on any prediction to track it.
               </p>
             ) : (

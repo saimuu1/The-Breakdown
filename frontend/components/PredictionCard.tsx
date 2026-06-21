@@ -19,12 +19,10 @@ function formatDate(iso: string): string {
   });
 }
 
-/** Drop a leading section header (e.g. "THE STORY:") so the teaser reads as prose. */
 function teaser(text: string): string {
-  return text.replace(/^\s*[A-Z][A-Z '’-]{2,40}:\s*/, "");
+  return text.replace(/^\s*[A-Z][A-Z ''-]{2,40}:\s*/, "");
 }
 
-/** The model's favored outcome key (e.g. "home"), for grading past picks. */
 function modelPick(probs: Record<string, number>): string {
   return Object.entries(probs).reduce((a, b) => (b[1] > a[1] ? b : a))[0];
 }
@@ -38,12 +36,12 @@ function ResultBadge({ p }: { p: PredictionView }) {
     <div className="mt-3 flex items-center gap-2 text-xs">
       <span
         className={`rounded px-2 py-0.5 font-semibold ${
-          hit ? "bg-emerald-500/15 text-emerald-400" : "bg-red-500/15 text-red-400"
+          hit ? "bg-emerald-500/12 text-emerald-400" : "bg-red-500/12 text-red-400"
         }`}
       >
         {hit ? "✓ Called it" : "✗ Missed"}
       </span>
-      <span className="text-neutral-500">{winnerName} won</span>
+      <span className="text-[#5a607a]">{winnerName} won</span>
     </div>
   );
 }
@@ -54,10 +52,10 @@ export function PredictionCard({ p, favorited = false }: { p: PredictionView; fa
   return (
     <Link
       href={`/matches/${p.match.id}`}
-      className="block rounded-xl border border-neutral-800 bg-neutral-900 p-5 transition hover:border-neutral-600"
+      className="block rounded-2xl border border-[#181b2a] bg-[#0c0f1a] p-5 transition-colors duration-150 hover:border-[#272b3f]"
     >
-      <div className="mb-3 flex items-center justify-between text-xs text-neutral-500">
-        <span className="rounded bg-neutral-800 px-2 py-0.5 font-medium uppercase tracking-wide text-neutral-300">
+      <div className="mb-3 flex items-center justify-between text-xs text-[#5a607a]">
+        <span className="rounded bg-[#181b2a] px-2 py-0.5 font-medium uppercase tracking-wide text-[#8b92a8]">
           {sport}
         </span>
         <div className="flex items-center gap-3">
@@ -68,13 +66,13 @@ export function PredictionCard({ p, favorited = false }: { p: PredictionView; fa
 
       <div className="mb-4 flex items-center justify-between gap-3">
         <div className="flex flex-1 items-center justify-end gap-2 text-right">
-          <span className="font-semibold text-neutral-100">{p.match.home.name}</span>
+          <span className="font-semibold text-[#e4e7f0]">{p.match.home.name}</span>
           <TeamCrest name={p.match.home.name} logoUrl={p.match.home.logo_url} />
         </div>
-        <span className="text-xs font-medium text-neutral-600">vs</span>
+        <span className="text-xs font-medium text-[#3a3e55]">vs</span>
         <div className="flex flex-1 items-center gap-2">
           <TeamCrest name={p.match.away.name} logoUrl={p.match.away.logo_url} />
-          <span className="font-semibold text-neutral-100">{p.match.away.name}</span>
+          <span className="font-semibold text-[#e4e7f0]">{p.match.away.name}</span>
         </div>
       </div>
 
@@ -83,7 +81,7 @@ export function PredictionCard({ p, favorited = false }: { p: PredictionView; fa
       <ResultBadge p={p} />
 
       {p.analysis && (
-        <p className="mt-4 line-clamp-3 text-sm leading-relaxed text-neutral-400">
+        <p className="mt-4 line-clamp-3 text-sm leading-relaxed text-[#5a607a]">
           <span className="font-semibold text-emerald-400">The Breakdown: </span>
           {teaser(p.analysis)}
         </p>

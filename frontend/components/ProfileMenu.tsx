@@ -23,20 +23,20 @@ export function ProfileMenu({ email }: { email: string }) {
       <button
         onClick={() => setOpen((v) => !v)}
         aria-label="Account menu"
-        className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-emerald-400 to-sky-400 text-xs font-bold text-neutral-900 shadow-md shadow-emerald-500/20 transition hover:brightness-110 focus:outline-none"
+        className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500 text-xs font-bold text-neutral-950 transition-colors duration-150 hover:bg-emerald-400 focus:outline-none"
       >
         {initials}
       </button>
 
       {open && (
-        <div className="absolute right-0 top-11 z-50 w-52 overflow-hidden rounded-xl border border-white/10 bg-[#0d0f17] shadow-2xl shadow-black/60">
-          <div className="border-b border-white/[0.07] px-4 py-3">
-            <p className="truncate text-xs text-neutral-400">{email}</p>
+        <div className="absolute right-0 top-11 z-50 w-52 overflow-hidden rounded-xl border border-[#1e2236] bg-[#0c0f1a] shadow-2xl shadow-black/50">
+          <div className="border-b border-[#1e2236] px-4 py-3">
+            <p className="truncate text-xs text-[#5a607a]">{email}</p>
           </div>
           <form action="/auth/signout" method="post">
             <button
               type="submit"
-              className="flex w-full items-center gap-2.5 px-4 py-3 text-sm text-neutral-300 transition hover:bg-white/5 hover:text-white"
+              className="flex w-full items-center gap-2.5 px-4 py-3 text-sm text-[#b0b8d0] transition-colors duration-150 hover:bg-[#111420] hover:text-[#e4e7f0]"
             >
               <SignOutIcon />
               Sign out

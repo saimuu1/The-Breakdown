@@ -1,8 +1,3 @@
-// Renders "The Breakdown" write-up. The current (v5) persona emits labeled
-// sections (THE STORY / THE KEY TO THE MATCHUP / THE PICK); older personas used
-// STAGE / THE EDGE / KEY FACTORS / THE PICK. We parse either into styled blocks
-// and gracefully fall back to plain prose for unlabeled analyses.
-
 const SECTIONS = [
   "THE STORY",
   "THE KEY TO THE MATCHUP",
@@ -14,7 +9,6 @@ const SECTIONS = [
 
 function parseSections(text: string): { heading: string; body: string }[] | null {
   const found: { heading: string; body: string }[] = [];
-  // Match "HEADER:" anywhere, capturing text until the next header or end.
   const pattern = new RegExp(
     `(${SECTIONS.join("|")})\\s*:\\s*([\\s\\S]*?)(?=(?:${SECTIONS.join("|")})\\s*:|$)`,
     "g",
@@ -30,23 +24,26 @@ export function Breakdown({ text }: { text: string }) {
   const sections = parseSections(text);
 
   return (
-    <section className="rounded-xl border border-emerald-500/20 bg-emerald-500/[0.03] p-6">
-      <h2 className="mb-4 text-sm font-bold uppercase tracking-widest text-emerald-400">
+    <section className="rounded-2xl border border-[#1e2236] bg-[#0c0f1a] p-6">
+      <h2
+        className="mb-5 text-xs font-bold uppercase tracking-widest text-emerald-400"
+        style={{ fontFamily: "var(--font-syne), system-ui, sans-serif" }}
+      >
         The Breakdown
       </h2>
       {sections ? (
-        <div className="space-y-4">
+        <div className="space-y-5">
           {sections.map((s) => (
             <div key={s.heading}>
-              <h3 className="mb-1 text-xs font-bold uppercase tracking-wider text-neutral-500">
+              <h3 className="mb-1.5 text-[10px] font-bold uppercase tracking-widest text-[#3a3e55]">
                 {s.heading}
               </h3>
-              <p className="leading-relaxed text-neutral-200">{s.body}</p>
+              <p className="leading-relaxed text-[#b0b8d0]">{s.body}</p>
             </div>
           ))}
         </div>
       ) : (
-        <p className="whitespace-pre-line leading-relaxed text-neutral-200">{text}</p>
+        <p className="whitespace-pre-line leading-relaxed text-[#b0b8d0]">{text}</p>
       )}
     </section>
   );

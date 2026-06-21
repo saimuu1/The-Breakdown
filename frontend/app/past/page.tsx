@@ -6,7 +6,6 @@ import { getFavoriteMatchIds, getPastPredictions, type PredictionView } from "@/
 
 export const dynamic = "force-dynamic";
 
-/** Same-pair set as the most recent game (for NBA "last series only"). */
 function lastSeries(preds: PredictionView[]): PredictionView[] {
   if (preds.length === 0) return preds;
   const top = preds[0].match;
@@ -16,9 +15,6 @@ function lastSeries(preds: PredictionView[]): PredictionView[] {
   );
 }
 
-/** Narrow to the most recent UFC numbered / PPV card (e.g. "UFC 328", "UFC
-   Freedom 250") — the marquee events. Falls back to the latest card of any kind,
-   then to grouping by date. `preds` arrives most-recent-first. */
 function latestNumberedCard(
   preds: PredictionView[],
 ): { event: string | null; preds: PredictionView[] } {
@@ -39,13 +35,12 @@ export default async function PastPage({
   searchParams: Promise<{ sport?: string; q?: string; event?: string }>;
 }) {
   const { sport: sportParam, q = "", event = "" } = await searchParams;
-  const sport = sportParam || "ufc"; // no "All" view — default to UFC
+  const sport = sportParam || "ufc";
   const [all, favoriteIds] = await Promise.all([
     getPastPredictions({ sport, q: q || undefined, event: event || undefined }),
     getFavoriteMatchIds(),
   ]);
 
-  // Smart defaults when not searching / not viewing a specific card.
   let predictions = all;
   let blurb = "Every pick we've published for events that have already happened — most recent first.";
   if (!q && !event) {
@@ -63,16 +58,21 @@ export default async function PastPage({
       }
     }
   } else if (q) {
-    blurb = `Results for “${q}”.`;
+    blurb = `Results for "${q}".`;
   }
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-neutral-100">
+    <div className="min-h-screen bg-[#07090e] text-[#e4e7f0]">
       <Nav />
-      <main className="mx-auto max-w-5xl px-6 py-10">
-        <header className="mb-6">
-          <h1 className="text-3xl font-bold tracking-tight">Past predictions</h1>
-          <p className="mt-1 text-neutral-400">{blurb}</p>
+      <main className="mx-auto max-w-5xl px-6 py-12">
+        <header className="mb-8">
+          <h1
+            className="text-4xl font-bold tracking-tight text-[#e4e7f0]"
+            style={{ fontFamily: "var(--font-syne), system-ui, sans-serif" }}
+          >
+            Past predictions
+          </h1>
+          <p className="mt-2 text-[#5a607a]">{blurb}</p>
         </header>
 
         <SportTabs basePath="/past" active={sport} />
@@ -82,8 +82,8 @@ export default async function PastPage({
           predictions={predictions}
           favoriteIds={favoriteIds}
           empty={
-            <p className="text-neutral-300">
-              {q ? `No past predictions match “${q}”.` : "No past predictions in this category yet."}
+            <p className="text-[#b0b8d0]">
+              {q ? `No past predictions match "${q}".` : "No past predictions in this category yet."}
             </p>
           }
         />

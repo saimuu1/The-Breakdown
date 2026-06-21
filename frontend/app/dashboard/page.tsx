@@ -15,7 +15,7 @@ import {
 } from "@/lib/queries";
 import { createClient } from "@/lib/supabase/server";
 
-export const dynamic = "force-dynamic"; // always reflect the current user's RLS view
+export const dynamic = "force-dynamic";
 
 export default async function DashboardPage({
   searchParams,
@@ -23,7 +23,7 @@ export default async function DashboardPage({
   searchParams: Promise<{ sport?: string; q?: string }>;
 }) {
   const { sport: sportParam, q = "" } = await searchParams;
-  const sport = sportParam || "ufc"; // no "All" view — default to UFC
+  const sport = sportParam || "ufc";
   const [all, favoriteIds] = await Promise.all([
     getPredictions("upcoming", sport),
     getFavoriteMatchIds(),
@@ -34,9 +34,6 @@ export default async function DashboardPage({
     ? all.filter((p) => predictionMatchesQuery(p, search))
     : withinUpcomingWindow(all);
 
-  // Pin the soonest marquee matchups (champions, megastars, big nations) to the
-  // top — capped so the Spotlight stays a tight "can't-miss" strip, not a wall.
-  // Not while searching — a search should return exactly what was asked for.
   const SPOTLIGHT_MAX = 5;
   const spotlight = search ? [] : windowed.filter(isMarqueeFight).slice(0, SPOTLIGHT_MAX);
   const spotlightIds = new Set(spotlight.map((p) => p.id));
@@ -48,20 +45,25 @@ export default async function DashboardPage({
   } = await supabase.auth.getUser();
 
   return (
-    <div className="min-h-screen bg-[#070810] text-neutral-100">
+    <div className="min-h-screen bg-[#07090e] text-[#e4e7f0]">
       <Nav />
       <RealtimeRefresher />
-      <main className="mx-auto max-w-5xl px-6 py-10">
-        <header className="mb-8">
-          <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-300">
+      <main className="mx-auto max-w-5xl px-6 py-12">
+        <header className="mb-10">
+          <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/8 px-3 py-1 text-xs font-medium text-emerald-400">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
             The board
           </span>
-          <h1 className="mt-4 text-5xl font-bold tracking-tight">Upcoming</h1>
-          <p className="mt-3 max-w-xl text-lg text-neutral-400">
+          <h1
+            className="mt-4 text-5xl font-bold tracking-tight text-[#e4e7f0]"
+            style={{ fontFamily: "var(--font-syne), system-ui, sans-serif" }}
+          >
+            Upcoming
+          </h1>
+          <p className="mt-3 max-w-xl text-lg text-[#5a607a]">
             {search
-              ? `Upcoming results for “${search}”.`
-              : "We already called every matchup. Here's who wins — and exactly why."}
+              ? `Upcoming results for "${search}".`
+              : "Every matchup called before the first bell. Here's who wins — and why."}
           </p>
         </header>
 
@@ -75,10 +77,14 @@ export default async function DashboardPage({
 
         {spotlight.length > 0 && (
           <section className="mb-12">
-            <div className="mb-5 flex items-center gap-2">
-              <span className="text-lg">🔥</span>
-              <h2 className="text-xl font-bold tracking-tight text-neutral-100">Spotlight</h2>
-              <span className="text-sm text-neutral-500">— the can&apos;t-miss matchups</span>
+            <div className="mb-5 flex items-baseline gap-3">
+              <h2
+                className="text-lg font-bold tracking-tight text-[#e4e7f0]"
+                style={{ fontFamily: "var(--font-syne), system-ui, sans-serif" }}
+              >
+                Spotlight
+              </h2>
+              <span className="text-sm text-[#5a607a]">can&apos;t-miss matchups</span>
             </div>
             <div className="grid gap-4">
               {spotlight.map((p) => (
@@ -99,7 +105,7 @@ export default async function DashboardPage({
           variant="premium"
           empty={
             search ? (
-              <p className="text-neutral-300">No upcoming predictions match “{search}”.</p>
+              <p className="text-[#b0b8d0]">No upcoming predictions match &ldquo;{search}&rdquo;.</p>
             ) : (
               <EmptyMessage sport={sport} loggedIn={!!user} />
             )
@@ -113,16 +119,18 @@ export default async function DashboardPage({
 const SPORT_NAME: Record<string, string> = { ufc: "UFC", soccer: "Soccer", nba: "NBA" };
 
 function EmptyMessage({ sport, loggedIn }: { sport: string; loggedIn: boolean }) {
-  // A specific sport is selected but has no upcoming games (e.g. NBA offseason).
   if (sport && loggedIn) {
     return (
       <div>
-        <p className="text-lg font-medium text-neutral-200">
+        <p className="text-lg font-medium text-[#b0b8d0]">
           No upcoming {SPORT_NAME[sport] ?? sport} predictions right now.
         </p>
-        <p className="mt-2 text-sm">
-          Check the <Link href={`/past?sport=${sport}`} className="text-emerald-400 hover:underline">
-          past predictions</Link> for the latest completed games, or another sport above.
+        <p className="mt-2 text-sm text-[#5a607a]">
+          Check the{" "}
+          <Link href={`/past?sport=${sport}`} className="text-emerald-400 hover:underline">
+            past predictions
+          </Link>{" "}
+          for the latest completed games, or another sport above.
         </p>
       </div>
     );
@@ -130,13 +138,13 @@ function EmptyMessage({ sport, loggedIn }: { sport: string; loggedIn: boolean })
   if (!loggedIn) {
     return (
       <div>
-        <p className="text-lg font-medium text-neutral-200">Log in to see the picks.</p>
-        <p className="mx-auto mt-2 max-w-md text-sm">
+        <p className="text-lg font-medium text-[#b0b8d0]">Log in to see the picks.</p>
+        <p className="mx-auto mt-2 max-w-md text-sm text-[#5a607a]">
           A free account unlocks every Soccer, UFC, and NBA prediction — upcoming and past.
         </p>
         <Link
           href="/login?next=/dashboard"
-          className="mt-5 inline-block rounded-lg bg-emerald-500 px-4 py-2 font-medium text-neutral-950 hover:bg-emerald-400"
+          className="mt-5 inline-block rounded-lg bg-emerald-500 px-4 py-2 font-semibold text-neutral-950 transition-colors duration-150 hover:bg-emerald-400"
         >
           Create a free account
         </Link>
@@ -145,8 +153,8 @@ function EmptyMessage({ sport, loggedIn }: { sport: string; loggedIn: boolean })
   }
   return (
     <div>
-      <p className="text-lg font-medium text-neutral-200">No upcoming predictions right now.</p>
-      <p className="mx-auto mt-2 max-w-md text-sm">
+      <p className="text-lg font-medium text-[#b0b8d0]">No upcoming predictions right now.</p>
+      <p className="mx-auto mt-2 max-w-md text-sm text-[#5a607a]">
         Nothing on the schedule at the moment. Check the{" "}
         <Link href="/past" className="text-emerald-400 hover:underline">
           past predictions

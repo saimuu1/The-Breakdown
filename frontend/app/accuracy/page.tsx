@@ -6,12 +6,12 @@ export default function AccuracyPage() {
   const gap = accuracy.model.brier - accuracy.market.brier;
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-neutral-100">
+    <div className="min-h-screen bg-[#07090e] text-[#e4e7f0]">
       <Nav />
-      <main className="mx-auto max-w-3xl px-6 py-10">
+      <main className="mx-auto max-w-3xl px-6 py-12">
         <header className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight">Track record</h1>
-          <p className="mt-2 max-w-2xl text-neutral-400">
+          <h1 className="text-4xl font-bold tracking-tight" style={{ fontFamily: "var(--font-syne), system-ui, sans-serif" }}>Track record</h1>
+          <p className="mt-2 max-w-2xl text-[#5a607a]">
             We don&apos;t claim to beat Vegas. We measure exactly how close the model gets to the
             de-vigged closing line, and show our calibration honestly. Scored on{" "}
             {accuracy.test_n.toLocaleString()} held-out UFC fights ({accuracy.test_window[0]} →{" "}
@@ -34,27 +34,27 @@ export default function AccuracyPage() {
           />
         </section>
 
-        <p className="mb-10 rounded-lg border border-neutral-800 bg-neutral-900 p-4 text-sm text-neutral-400">
+        <p className="mb-10 rounded-2xl border border-[#1e2236] bg-[#0c0f1a] p-4 text-sm text-[#5a607a]">
           The market&apos;s closing line is the gold standard — it&apos;s extremely hard to beat. Our
           model&apos;s Brier sits just{" "}
-          <span className="font-semibold text-neutral-200">{gap.toFixed(3)}</span> behind it, on
+          <span className="font-semibold text-[#e4e7f0]">{gap.toFixed(3)}</span> behind it, on
           self-computed point-in-time features with zero odds leakage.
         </p>
 
         <section>
-          <h2 className="mb-1 text-sm font-bold uppercase tracking-widest text-neutral-400">
+          <h2 className="mb-1 text-xs font-bold uppercase tracking-widest text-[#3a3e55]">
             Calibration
           </h2>
-          <p className="mb-4 text-sm text-neutral-500">
+          <p className="mb-4 text-sm text-[#5a607a]">
             When the model says 70%, does it happen ~70% of the time? Points on the dashed line are
             perfectly calibrated.
           </p>
-          <div className="rounded-xl border border-neutral-800 bg-neutral-900 p-5">
+          <div className="rounded-2xl border border-[#1e2236] bg-[#0c0f1a] p-5">
             <CalibrationChart calibration={accuracy.calibration} />
           </div>
         </section>
 
-        <p className="mt-8 text-xs text-neutral-600">
+        <p className="mt-8 text-xs text-[#3a3e55]">
           {accuracy.model_type} model · {accuracy.n_features} self-computed features · time-based
           train/test split · market = de-vigged closing moneyline (n={accuracy.market.n}).
         </p>
@@ -75,19 +75,19 @@ function MetricCard({
   market: number;
 }) {
   return (
-    <div className="rounded-xl border border-neutral-800 bg-neutral-900 p-5">
+    <div className="rounded-2xl border border-[#1e2236] bg-[#0c0f1a] p-5">
       <div className="flex items-baseline justify-between">
-        <h3 className="font-semibold">{title}</h3>
-        <span className="text-xs text-neutral-500">{subtitle}</span>
+        <h3 className="font-semibold text-[#e4e7f0]">{title}</h3>
+        <span className="text-xs text-[#3a3e55]">{subtitle}</span>
       </div>
       <div className="mt-4 flex items-end gap-6">
         <div>
           <p className="text-3xl font-bold text-emerald-400">{model.toFixed(3)}</p>
-          <p className="text-xs text-neutral-500">our model</p>
+          <p className="text-xs text-[#5a607a]">our model</p>
         </div>
         <div>
-          <p className="text-3xl font-bold text-neutral-300">{market.toFixed(3)}</p>
-          <p className="text-xs text-neutral-500">market</p>
+          <p className="text-3xl font-bold text-[#b0b8d0]">{market.toFixed(3)}</p>
+          <p className="text-xs text-[#5a607a]">market</p>
         </div>
       </div>
     </div>

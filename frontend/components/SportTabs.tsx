@@ -6,38 +6,32 @@ const SPORTS: { id: string; label: string; soon?: boolean }[] = [
   { id: "nba", label: "NBA" },
 ];
 
-const ACTIVE: Record<string, string> = {
-  emerald: "border-emerald-500 bg-emerald-500/10 text-emerald-400",
-  violet: "border-violet-500 bg-violet-500/10 text-violet-300",
-};
-
 export function SportTabs({
   basePath,
   active,
-  accent = "emerald",
 }: {
   basePath: string;
   active: string;
-  accent?: "emerald" | "violet";
+  accent?: string; // kept for backwards compat, unused
 }) {
   return (
     <div className="mb-6 flex flex-wrap gap-2">
       {SPORTS.map((s) => {
         const isActive = s.id === active;
-        const href = s.id ? `${basePath}?sport=${s.id}` : basePath;
+        const href = `${basePath}?sport=${s.id}`;
         return (
           <Link
-            key={s.id || "all"}
+            key={s.id}
             href={href}
-            className={`flex items-center gap-1.5 rounded-full border px-4 py-1.5 text-sm transition ${
+            className={`flex items-center gap-1.5 rounded-full border px-4 py-1.5 text-sm font-medium transition-colors duration-150 ${
               isActive
-                ? ACTIVE[accent]
-                : "border-neutral-800 text-neutral-400 hover:border-neutral-600 hover:text-neutral-200"
+                ? "border-emerald-500/60 bg-emerald-500/10 text-emerald-400"
+                : "border-[#1e2236] text-[#7a8099] hover:border-[#2e3248] hover:text-[#b0b8d0]"
             }`}
           >
             {s.label}
             {s.soon && (
-              <span className="rounded bg-neutral-800 px-1.5 py-0.5 text-[10px] uppercase text-neutral-500">
+              <span className="rounded bg-[#181b2a] px-1.5 py-0.5 text-[10px] uppercase text-[#5a607a]">
                 soon
               </span>
             )}

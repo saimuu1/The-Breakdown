@@ -24,19 +24,19 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
   const prediction = await getPredictionByMatch(id);
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-neutral-100">
+    <div className="min-h-screen bg-[#07090e] text-[#e4e7f0]">
       <Nav />
       <main className="mx-auto max-w-3xl px-6 py-10">
-        <Link href="/dashboard" className="text-sm text-neutral-500 hover:text-neutral-300">
+        <Link href="/dashboard" className="text-sm text-[#5a607a] transition-colors duration-150 hover:text-[#b0b8d0]">
           ← Back to dashboard
         </Link>
 
         {prediction ? (
           <MatchDetail prediction={prediction} matchId={id} />
         ) : (
-          <div className="mt-10 rounded-xl border border-dashed border-neutral-800 bg-neutral-900/50 p-10 text-center">
-            <p className="text-lg font-medium">This prediction isn&apos;t available.</p>
-            <p className="mt-2 text-sm text-neutral-400">
+          <div className="mt-10 rounded-2xl border border-dashed border-[#1e2236] p-10 text-center">
+            <p className="text-lg font-medium text-[#b0b8d0]">This prediction isn&apos;t available.</p>
+            <p className="mt-2 text-sm text-[#5a607a]">
               You may need to{" "}
               <Link href="/login?next=/dashboard" className="text-emerald-400 hover:underline">
                 log in
@@ -72,7 +72,6 @@ async function MatchDetail({
     year: "numeric",
   });
 
-  // Verdict: the model's favored outcome + confidence.
   const [pickKey, pickProb] = Object.entries(prediction.probs).reduce((a, b) =>
     b[1] > a[1] ? b : a,
   );
@@ -85,8 +84,8 @@ async function MatchDetail({
   return (
     <article className="mt-6 space-y-6">
       <div>
-        <div className="mb-2 flex items-center gap-3 text-xs text-neutral-500">
-          <span className="rounded bg-neutral-800 px-2 py-0.5 font-medium uppercase tracking-wide text-neutral-300">
+        <div className="mb-2 flex items-center gap-3 text-xs text-[#5a607a]">
+          <span className="rounded bg-[#181b2a] px-2 py-0.5 font-medium uppercase tracking-wide text-[#8b92a8]">
             {sport}
           </span>
           {prediction.match.event_name && <span>{prediction.match.event_name}</span>}
@@ -94,12 +93,15 @@ async function MatchDetail({
         </div>
 
         <div className="flex items-start justify-between gap-4">
-          <h1 className="flex flex-wrap items-center gap-3 text-3xl font-bold tracking-tight">
+          <h1
+            className="flex flex-wrap items-center gap-3 text-3xl font-bold tracking-tight text-[#e4e7f0]"
+            style={{ fontFamily: "var(--font-syne), system-ui, sans-serif" }}
+          >
             <span className="flex items-center gap-2">
               <TeamCrest name={home.name} logoUrl={home.logo_url} size={32} />
               {home.name}
             </span>
-            <span className="text-neutral-600">vs</span>
+            <span className="text-[#3a3e55]">vs</span>
             <span className="flex items-center gap-2">
               <TeamCrest name={away.name} logoUrl={away.logo_url} size={32} />
               {away.name}
@@ -113,32 +115,28 @@ async function MatchDetail({
         </div>
       </div>
 
-      {/* Verdict header */}
-      <div className="rounded-xl border border-neutral-800 bg-neutral-900 p-6">
+      {/* Verdict */}
+      <div className="rounded-2xl border border-[#1e2236] bg-[#0c0f1a] p-6">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-neutral-500">
-              The pick
-            </p>
+            <p className="text-xs font-bold uppercase tracking-widest text-[#3a3e55]">The pick</p>
             <p className="mt-1 text-2xl font-bold text-emerald-400">{pickName}</p>
           </div>
           <div className="text-right">
-            <p className="text-xs font-medium uppercase tracking-wide text-neutral-500">
-              Model confidence
-            </p>
-            <p className="mt-1 text-2xl font-bold text-neutral-100">{Math.round(pickProb * 100)}%</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-[#3a3e55]">Confidence</p>
+            <p className="mt-1 text-2xl font-bold text-[#e4e7f0]">{Math.round(pickProb * 100)}%</p>
           </div>
         </div>
         {graded && (
-          <div className="mt-4 flex items-center gap-2 border-t border-neutral-800 pt-3 text-sm">
+          <div className="mt-4 flex items-center gap-2 border-t border-[#1e2236] pt-3 text-sm">
             <span
               className={`rounded px-2 py-0.5 font-semibold ${
-                graded.hit ? "bg-emerald-500/15 text-emerald-400" : "bg-red-500/15 text-red-400"
+                graded.hit ? "bg-emerald-500/12 text-emerald-400" : "bg-red-500/12 text-red-400"
               }`}
             >
               {graded.hit ? "✓ Called it" : "✗ Missed"}
             </span>
-            <span className="text-neutral-500">{graded.winnerName} won</span>
+            <span className="text-[#5a607a]">{graded.winnerName} won</span>
           </div>
         )}
         <div className="mt-5">
@@ -160,15 +158,15 @@ async function MatchDetail({
 
       {edges.length > 0 && (
         <section>
-          <h2 className="mb-3 text-sm font-bold uppercase tracking-widest text-neutral-400">
+          <h2 className="mb-3 text-xs font-bold uppercase tracking-widest text-[#3a3e55]">
             Key statistical edges
           </h2>
-          <ul className="divide-y divide-neutral-800 rounded-xl border border-neutral-800 bg-neutral-900">
+          <ul className="divide-y divide-[#1e2236] rounded-2xl border border-[#1e2236] bg-[#0c0f1a]">
             {edges.map((e) => (
               <li key={e.label} className="flex items-center justify-between px-5 py-3 text-sm">
-                <span className="text-neutral-400">{e.label}</span>
-                <span className="font-medium text-neutral-100">
-                  {e.favored} <span className="text-neutral-500">+{e.magnitude.toFixed(1)}</span>
+                <span className="text-[#5a607a]">{e.label}</span>
+                <span className="font-medium text-[#e4e7f0]">
+                  {e.favored} <span className="text-[#3a3e55]">+{e.magnitude.toFixed(1)}</span>
                 </span>
               </li>
             ))}
@@ -176,7 +174,7 @@ async function MatchDetail({
         </section>
       )}
 
-      <p className="text-xs text-neutral-600">
+      <p className="text-xs text-[#3a3e55]">
         Model {prediction.model_version}
         {prediction.analysis_version ? ` · analyst ${prediction.analysis_version}` : ""} · for
         entertainment, not betting advice.

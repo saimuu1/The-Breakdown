@@ -2,7 +2,6 @@ import { FightCard } from "@/components/FightCard";
 import { PredictionCard } from "@/components/PredictionCard";
 import type { PredictionView } from "@/lib/queries";
 
-/** Unit noun per sport, for the "5 fights" / "3 games" group count. */
 const UNIT: Record<string, [string, string]> = {
   ufc: ["fight", "fights"],
   soccer: ["match", "matches"],
@@ -32,8 +31,6 @@ interface Group {
   preds: PredictionView[];
 }
 
-/** Group predictions into cards/days, preserving the incoming order. A group is
-   one event_name (e.g. a UFC card) or, when none is set, one calendar day. */
 function group(predictions: PredictionView[]): Group[] {
   const groups: Group[] = [];
   const index = new Map<string, number>();
@@ -56,8 +53,6 @@ function group(predictions: PredictionView[]): Group[] {
   return groups;
 }
 
-/** Predictions rendered as titled sections — one per card/day — so a long list
-   reads as an organized program instead of a flat wall of matchups. */
 export function GroupedPredictionGrid({
   predictions,
   empty,
@@ -71,7 +66,7 @@ export function GroupedPredictionGrid({
 }) {
   if (predictions.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-neutral-800 bg-neutral-900/50 p-10 text-center text-neutral-400">
+      <div className="rounded-2xl border border-dashed border-[#1e2236] p-10 text-center text-[#5a607a]">
         {empty}
       </div>
     );
@@ -85,19 +80,25 @@ export function GroupedPredictionGrid({
         <section key={g.key}>
           {premium ? (
             <div className="mb-5 flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
-              <div className="flex items-center gap-3">
-                <span className="h-6 w-1 rounded-full bg-emerald-400" />
-                <h2 className="text-xl font-bold tracking-tight text-neutral-100">{g.title}</h2>
+              <div className="flex items-baseline gap-3">
+                <h2
+                  className="text-xl font-bold tracking-tight text-[#e4e7f0]"
+                  style={{ fontFamily: "var(--font-syne), system-ui, sans-serif" }}
+                >
+                  {g.title}
+                </h2>
+                <span className="text-xs font-medium text-[#5a607a]">
+                  {g.hasEvent ? formatDate(g.date) : ""}
+                </span>
               </div>
-              <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-neutral-400">
-                {g.hasEvent && <>{formatDate(g.date)} · </>}
+              <span className="rounded-full border border-[#1e2236] px-3 py-1 text-xs font-medium text-[#5a607a]">
                 {g.preds.length} {unit(g.sportId, g.preds.length)}
               </span>
             </div>
           ) : (
-            <div className="mb-4 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 border-b border-neutral-800 pb-2">
-              <h2 className="text-lg font-semibold tracking-tight text-neutral-100">{g.title}</h2>
-              <span className="text-xs text-neutral-500">
+            <div className="mb-4 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 border-b border-[#1e2236] pb-2">
+              <h2 className="text-lg font-semibold tracking-tight text-[#e4e7f0]">{g.title}</h2>
+              <span className="text-xs text-[#5a607a]">
                 {g.hasEvent && <>{formatDate(g.date)} · </>}
                 {g.preds.length} {unit(g.sportId, g.preds.length)}
               </span>

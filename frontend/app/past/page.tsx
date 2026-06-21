@@ -82,9 +82,19 @@ export default async function PastPage({
           predictions={predictions}
           favoriteIds={favoriteIds}
           empty={
-            <p className="text-[#b0b8d0]">
-              {q ? `No past predictions match "${q}".` : "No past predictions in this category yet."}
-            </p>
+            q ? (
+              <div>
+                <p className="text-[#b0b8d0]">No past predictions for &ldquo;{q}&rdquo;.</p>
+                <p className="mt-1 text-sm text-[#5a607a]">
+                  They may not have played yet —{" "}
+                  <a href={`/dashboard?sport=${sport}&q=${encodeURIComponent(q)}`} className="text-emerald-400 hover:underline">
+                    check Upcoming
+                  </a>.
+                </p>
+              </div>
+            ) : (
+              <p className="text-[#b0b8d0]">No past predictions in this category yet.</p>
+            )
           }
         />
       </main>

@@ -36,7 +36,11 @@ function group(predictions: PredictionView[]): Group[] {
   const index = new Map<string, number>();
   for (const p of predictions) {
     const event = p.match.event_name;
-    const key = event ?? p.match.starts_at.slice(0, 10);
+    // Use the formatted display date as the key so that matches on the same
+    // calendar day (local timezone) land in the same section. Using the raw
+    // UTC slice would split early-UTC matches onto a different "day" than how
+    // they display, producing duplicate-looking date headers.
+    const key = event ?? formatDate(p.match.starts_at);
     if (!index.has(key)) {
       index.set(key, groups.length);
       groups.push({

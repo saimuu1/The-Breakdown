@@ -11,13 +11,15 @@ import {
 
 export const dynamic = "force-dynamic";
 
-function lastSeries(preds: PredictionView[]): PredictionView[] {
-  if (preds.length === 0) return preds;
-  const top = preds[0].match;
-  const pair = new Set([top.home.name, top.away.name]);
-  return preds.filter(
-    (p) => pair.has(p.match.home.name) && pair.has(p.match.away.name),
-  );
+// The NBA past board shows ONLY this year's postseason. The 2025-26 regular
+// season ends 2026-04-13; the play-in + playoffs run from 2026-04-14 to the
+// June Finals. Our NBA data is a static this-year snapshot, so a date cutoff is
+// the simplest reliable separator (regular season = 7-9 games/day, postseason
+// drops to 1-4/day from this date on).
+const NBA_PLAYOFFS_START = "2026-04-14";
+
+function nbaPlayoffs(preds: PredictionView[]): PredictionView[] {
+  return preds.filter((p) => p.match.starts_at >= NBA_PLAYOFFS_START);
 }
 
 function latestNumberedCard(
@@ -44,8 +46,9 @@ export default async function PastPage({
 
   // Always load the full recent past — search is done in-memory below so
   // every team / fighter name is findable without a round-trip per query.
+  // NBA goes back further so the whole playoff bracket is covered.
   const [all, favoriteIds] = await Promise.all([
-    getPastPredictions({ sport, event: event || undefined }),
+    getPastPredictions({ sport, event: event || undefined, limit: sport === "nba" ? 200 : 120 }),
     getFavoriteMatchIds(),
   ]);
 
@@ -53,25 +56,26 @@ export default async function PastPage({
   let predictions = all;
   let blurb = "Every pick we've published for events that have already happened — most recent first.";
 
-  if (search) {
+  if (sport === "nba") {
+    // NBA past = this year's playoffs only, grouped by date.
+    const playoffs = nbaPlayoffs(all);
+    if (search) {
+      predictions = playoffs.filter((p) => predictionMatchesQuery(p, search));
+      blurb = `Playoff results for "${search}".`;
+    } else {
+      predictions = playoffs;
+      blurb = "Every pick from this year's NBA playoffs — all the way to the Finals.";
+    }
+  } else if (search) {
     predictions = all.filter((p) => predictionMatchesQuery(p, search));
     blurb = `Results for "${search}".`;
   } else if (event) {
     blurb = `Showing event: ${event}.`;
-  } else {
-    // Smart defaults when not searching
-    if (sport === "ufc") {
-      const { preds } = latestNumberedCard(all);
-      predictions = preds;
-      if (preds.length) {
-        blurb = "Here's how the latest card shook out. Search any fighter or event to dig further back.";
-      }
-    } else if (sport === "nba") {
-      predictions = lastSeries(all);
-      if (predictions.length) {
-        const m = predictions[0].match;
-        blurb = `Showing the last series: ${m.home.name} vs ${m.away.name}. Search a team for more.`;
-      }
+  } else if (sport === "ufc") {
+    const { preds } = latestNumberedCard(all);
+    predictions = preds;
+    if (preds.length) {
+      blurb = "Here's how the latest card shook out. Search any fighter or event to dig further back.";
     }
   }
 

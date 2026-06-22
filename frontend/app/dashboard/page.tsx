@@ -119,6 +119,26 @@ export default async function DashboardPage({
 const SPORT_NAME: Record<string, string> = { ufc: "UFC", soccer: "Soccer", nba: "NBA" };
 
 function EmptyMessage({ sport, loggedIn }: { sport: string; loggedIn: boolean }) {
+  // NBA is between seasons — be explicit that games will populate automatically
+  // once the new season tips off (the ingest pulls upcoming fixtures from ESPN).
+  if (sport === "nba" && loggedIn) {
+    return (
+      <div className="flex flex-col items-center">
+        <span className="text-4xl">🏀</span>
+        <p className="mt-4 text-lg font-semibold text-[#b0b8d0]">The NBA is between seasons.</p>
+        <p className="mx-auto mt-2 max-w-md text-sm text-[#5a607a]">
+          No games to call right now. Upcoming matchups will appear here automatically
+          the moment the new season tips off — check back then.
+        </p>
+        <Link
+          href="/past?sport=nba"
+          className="mt-5 inline-block rounded-lg border border-[#1e2236] px-4 py-2 text-sm font-medium text-[#b0b8d0] transition-colors duration-150 hover:border-[#2e3248] hover:text-[#e4e7f0]"
+        >
+          Revisit this year&apos;s playoffs →
+        </Link>
+      </div>
+    );
+  }
   if (sport && loggedIn) {
     return (
       <div>

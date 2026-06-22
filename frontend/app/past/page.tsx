@@ -11,15 +11,25 @@ import {
 
 export const dynamic = "force-dynamic";
 
-// The NBA past board shows ONLY this year's postseason. The 2025-26 regular
-// season ends 2026-04-13; the play-in + playoffs run from 2026-04-14 to the
-// June Finals. Our NBA data is a static this-year snapshot, so a date cutoff is
-// the simplest reliable separator (regular season = 7-9 games/day, postseason
-// drops to 1-4/day from this date on).
-const NBA_PLAYOFFS_START = "2026-04-14";
+// The NBA past board shows ONLY this year's playoffs, grouped by series. The
+// 2025-26 regular season ends 2026-04-13 and the play-in runs 04-14 to 04-17
+// (single-elimination, not series). The playoffs proper (best-of-7 rounds) start
+// 2026-04-18, so we cut there — every group is then a real series. Our NBA data
+// is a static this-year snapshot, so a date cutoff is the simplest separator.
+const NBA_PLAYOFFS_START = "2026-04-18";
 
+function seriesKey(p: PredictionView): string {
+  return [p.match.home.name, p.match.away.name].sort().join(" | ");
+}
+
+/** This year's playoffs, as true series. A best-of-7 series always has 2+ games;
+   dropping single-game matchups removes any play-in straggler that lands on the
+   cutoff date, so every group on the board is an actual series. */
 function nbaPlayoffs(preds: PredictionView[]): PredictionView[] {
-  return preds.filter((p) => p.match.starts_at >= NBA_PLAYOFFS_START);
+  const postseason = preds.filter((p) => p.match.starts_at >= NBA_PLAYOFFS_START);
+  const counts = new Map<string, number>();
+  for (const p of postseason) counts.set(seriesKey(p), (counts.get(seriesKey(p)) ?? 0) + 1);
+  return postseason.filter((p) => (counts.get(seriesKey(p)) ?? 0) >= 2);
 }
 
 function latestNumberedCard(
@@ -99,6 +109,7 @@ export default async function PastPage({
         <GroupedPredictionGrid
           predictions={predictions}
           favoriteIds={favoriteIds}
+          groupBy={sport === "nba" ? "series" : "auto"}
           empty={
             search ? (
               <div>

@@ -57,16 +57,48 @@ function group(predictions: PredictionView[]): Group[] {
   return groups;
 }
 
+/** Group a playoff bracket by series — the unordered pair of teams. Within a
+   year each pair meets exactly once, so the pair uniquely identifies a series.
+   Series stay in most-recent-first order (Finals on top); games inside each run
+   chronologically (Game 1 → last) so the series reads in order. */
+function groupBySeries(predictions: PredictionView[]): Group[] {
+  const groups: Group[] = [];
+  const index = new Map<string, number>();
+  for (const p of predictions) {
+    const key = [p.match.home.name, p.match.away.name].sort().join(" | ");
+    if (!index.has(key)) {
+      index.set(key, groups.length);
+      groups.push({
+        key,
+        title: `${p.match.home.name} vs ${p.match.away.name}`,
+        hasEvent: false, // matchup title carries it; no date prefix
+        date: p.match.starts_at,
+        sportId: p.match.league.sport_id,
+        preds: [],
+      });
+    }
+    groups[index.get(key)!].preds.push(p);
+  }
+  for (const g of groups) {
+    g.preds.sort(
+      (a, b) => new Date(a.match.starts_at).getTime() - new Date(b.match.starts_at).getTime(),
+    );
+  }
+  return groups;
+}
+
 export function GroupedPredictionGrid({
   predictions,
   empty,
   favoriteIds,
   variant = "default",
+  groupBy = "auto",
 }: {
   predictions: PredictionView[];
   empty: React.ReactNode;
   favoriteIds?: Set<string>;
   variant?: "default" | "premium";
+  groupBy?: "auto" | "series";
 }) {
   if (predictions.length === 0) {
     return (
@@ -77,10 +109,11 @@ export function GroupedPredictionGrid({
   }
 
   const premium = variant === "premium";
+  const groups = groupBy === "series" ? groupBySeries(predictions) : group(predictions);
 
   return (
     <div className="space-y-12">
-      {group(predictions).map((g) => (
+      {groups.map((g) => (
         <section key={g.key}>
           {premium ? (
             <div className="mb-5 flex flex-wrap items-center justify-between gap-x-3 gap-y-1">

@@ -2,13 +2,14 @@ import Link from "next/link";
 
 import { Breakdown } from "@/components/Breakdown";
 import { FavoriteButton } from "@/components/FavoriteButton";
+import { FollowButton } from "@/components/FollowButton";
 import { Leaders } from "@/components/Leaders";
 import { Nav } from "@/components/Nav";
 import { ProbabilityBar } from "@/components/ProbabilityBar";
 import { StatCompare } from "@/components/StatCompare";
 import { TeamCrest } from "@/components/TeamCrest";
 import { computeEdges } from "@/lib/featureLabels";
-import { getFavoriteMatchIds, getMatchFeatures, getPredictionByMatch } from "@/lib/queries";
+import { getFavoriteMatchIds, getFollowedCompetitorIds, getMatchFeatures, getPredictionByMatch } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
 
@@ -57,9 +58,10 @@ async function MatchDetail({
   prediction: NonNullable<Awaited<ReturnType<typeof getPredictionByMatch>>>;
   matchId: string;
 }) {
-  const [features, favoriteIds] = await Promise.all([
+  const [features, favoriteIds, followedCompetitorIds] = await Promise.all([
     getMatchFeatures(matchId),
     getFavoriteMatchIds(),
+    getFollowedCompetitorIds(),
   ]);
   const { home, away } = prediction.match;
   const sportId = prediction.match.league.sport_id;
@@ -94,17 +96,27 @@ async function MatchDetail({
 
         <div className="flex items-start justify-between gap-4">
           <h1
-            className="flex flex-wrap items-center gap-3 text-3xl font-bold tracking-tight text-[#e4e7f0]"
+            className="group flex flex-wrap items-center gap-3 text-3xl font-bold tracking-tight text-[#e4e7f0]"
             style={{ fontFamily: "var(--font-syne), system-ui, sans-serif" }}
           >
             <span className="flex items-center gap-2">
               <TeamCrest name={home.name} logoUrl={home.logo_url} size={32} />
               {home.name}
+              <FollowButton
+                competitorId={home.id}
+                competitorName={home.name}
+                initialFollowed={followedCompetitorIds.has(home.id)}
+              />
             </span>
             <span className="text-[#3a3e55]">vs</span>
             <span className="flex items-center gap-2">
               <TeamCrest name={away.name} logoUrl={away.logo_url} size={32} />
               {away.name}
+              <FollowButton
+                competitorId={away.id}
+                competitorName={away.name}
+                initialFollowed={followedCompetitorIds.has(away.id)}
+              />
             </span>
           </h1>
           <FavoriteButton

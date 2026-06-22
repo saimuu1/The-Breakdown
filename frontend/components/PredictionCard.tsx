@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { FavoriteButton } from "@/components/FavoriteButton";
+import { FollowButton } from "@/components/FollowButton";
 import { ProbabilityBar } from "@/components/ProbabilityBar";
 import { TeamCrest } from "@/components/TeamCrest";
 import type { PredictionView } from "@/lib/queries";
@@ -46,13 +47,21 @@ function ResultBadge({ p }: { p: PredictionView }) {
   );
 }
 
-export function PredictionCard({ p, favorited = false }: { p: PredictionView; favorited?: boolean }) {
+export function PredictionCard({
+  p,
+  favorited = false,
+  followedCompetitorIds,
+}: {
+  p: PredictionView;
+  favorited?: boolean;
+  followedCompetitorIds?: Set<string>;
+}) {
   const sport = SPORT_LABEL[p.match.league.sport_id] ?? p.match.league.sport_id;
 
   return (
     <Link
       href={`/matches/${p.match.id}`}
-      className="block rounded-2xl border border-[#181b2a] bg-[#0c0f1a] p-5 transition-colors duration-150 hover:border-[#272b3f]"
+      className="group block rounded-2xl border border-[#181b2a] bg-[#0c0f1a] p-5 transition-colors duration-150 hover:border-[#272b3f]"
     >
       <div className="mb-3 flex items-center justify-between text-xs text-[#5a607a]">
         <span className="rounded bg-[#181b2a] px-2 py-0.5 font-medium uppercase tracking-wide text-[#8b92a8]">
@@ -66,6 +75,11 @@ export function PredictionCard({ p, favorited = false }: { p: PredictionView; fa
 
       <div className="mb-4 flex items-center justify-between gap-3">
         <div className="flex flex-1 items-center justify-end gap-2 text-right">
+          <FollowButton
+            competitorId={p.match.home.id}
+            competitorName={p.match.home.name}
+            initialFollowed={followedCompetitorIds?.has(p.match.home.id) ?? false}
+          />
           <span className="font-semibold text-[#e4e7f0]">{p.match.home.name}</span>
           <TeamCrest name={p.match.home.name} logoUrl={p.match.home.logo_url} />
         </div>
@@ -73,6 +87,11 @@ export function PredictionCard({ p, favorited = false }: { p: PredictionView; fa
         <div className="flex flex-1 items-center gap-2">
           <TeamCrest name={p.match.away.name} logoUrl={p.match.away.logo_url} />
           <span className="font-semibold text-[#e4e7f0]">{p.match.away.name}</span>
+          <FollowButton
+            competitorId={p.match.away.id}
+            competitorName={p.match.away.name}
+            initialFollowed={followedCompetitorIds?.has(p.match.away.id) ?? false}
+          />
         </div>
       </div>
 

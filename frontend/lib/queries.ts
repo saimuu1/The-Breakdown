@@ -16,8 +16,8 @@ export interface PredictionView {
     result: { winner?: string; winner_name?: string } | null;
     event_name: string | null;
     context: { leaders?: { home?: string[]; away?: string[] } | null } | null;
-    home: { name: string; logo_url: string | null };
-    away: { name: string; logo_url: string | null };
+    home: { id: string; name: string; logo_url: string | null };
+    away: { id: string; name: string; logo_url: string | null };
     league: { sport_id: string };
   };
 }
@@ -26,8 +26,8 @@ const SELECT = `
   id, probs, analysis, analysis_version, model_version, tier,
   match:matches!inner(
     id, starts_at, status, result, event_name, context,
-    home:competitors!matches_home_id_fkey(name, logo_url),
-    away:competitors!matches_away_id_fkey(name, logo_url),
+    home:competitors!matches_home_id_fkey(id, name, logo_url),
+    away:competitors!matches_away_id_fkey(id, name, logo_url),
     league:leagues!inner(sport_id)
   )
 `;
@@ -227,6 +227,13 @@ export async function getFavoritePredictions(): Promise<PredictionView[]> {
   const supabase = await createClient();
   const rows = await predictionsForMatches(supabase, [...favs]);
   return sortByStart(rows);
+}
+
+/** The set of competitor ids the current user follows (empty if logged out). */
+export async function getFollowedCompetitorIds(): Promise<Set<string>> {
+  const supabase = await createClient();
+  const { data } = await supabase.from("followed_competitors").select("competitor_id");
+  return new Set(((data ?? []) as { competitor_id: string }[]).map((r) => r.competitor_id));
 }
 
 /** Stored feature differentials for a match (sport-specific inputs). */

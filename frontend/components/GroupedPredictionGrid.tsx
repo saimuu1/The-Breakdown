@@ -91,12 +91,14 @@ export function GroupedPredictionGrid({
   predictions,
   empty,
   favoriteIds,
+  followedCompetitorIds,
   variant = "default",
   groupBy = "auto",
 }: {
   predictions: PredictionView[];
   empty: React.ReactNode;
   favoriteIds?: Set<string>;
+  followedCompetitorIds?: Set<string>;
   variant?: "default" | "premium";
   groupBy?: "auto" | "series";
 }) {
@@ -146,7 +148,12 @@ export function GroupedPredictionGrid({
               premium ? (
                 <FightCard key={p.id} p={p} favorited={favoriteIds?.has(p.match.id) ?? false} />
               ) : (
-                <PredictionCard key={p.id} p={p} favorited={favoriteIds?.has(p.match.id) ?? false} />
+                <PredictionCard
+                  key={p.id}
+                  p={p}
+                  favorited={favoriteIds?.has(p.match.id) ?? false}
+                  followedCompetitorIds={followedCompetitorIds}
+                />
               ),
             )}
           </div>

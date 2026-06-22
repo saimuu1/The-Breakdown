@@ -5,10 +5,12 @@ export function PredictionGrid({
   predictions,
   empty,
   favoriteIds,
+  followedCompetitorIds,
 }: {
   predictions: PredictionView[];
   empty: React.ReactNode;
   favoriteIds?: Set<string>;
+  followedCompetitorIds?: Set<string>;
 }) {
   if (predictions.length === 0) {
     return (
@@ -20,7 +22,12 @@ export function PredictionGrid({
   return (
     <div className="grid gap-4 sm:grid-cols-2">
       {predictions.map((p) => (
-        <PredictionCard key={p.id} p={p} favorited={favoriteIds?.has(p.match.id) ?? false} />
+        <PredictionCard
+          key={p.id}
+          p={p}
+          favorited={favoriteIds?.has(p.match.id) ?? false}
+          followedCompetitorIds={followedCompetitorIds}
+        />
       ))}
     </div>
   );

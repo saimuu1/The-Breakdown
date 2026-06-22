@@ -4,6 +4,7 @@ import { SearchBar } from "@/components/SearchBar";
 import { SportTabs } from "@/components/SportTabs";
 import {
   getFavoriteMatchIds,
+  getFollowedCompetitorIds,
   getPastPredictions,
   predictionMatchesQuery,
   type PredictionView,
@@ -57,9 +58,10 @@ export default async function PastPage({
   // Always load the full recent past — search is done in-memory below so
   // every team / fighter name is findable without a round-trip per query.
   // NBA goes back further so the whole playoff bracket is covered.
-  const [all, favoriteIds] = await Promise.all([
+  const [all, favoriteIds, followedCompetitorIds] = await Promise.all([
     getPastPredictions({ sport, event: event || undefined, limit: sport === "nba" ? 200 : 120 }),
     getFavoriteMatchIds(),
+    getFollowedCompetitorIds(),
   ]);
 
   const search = q.trim();
@@ -109,6 +111,7 @@ export default async function PastPage({
         <GroupedPredictionGrid
           predictions={predictions}
           favoriteIds={favoriteIds}
+          followedCompetitorIds={followedCompetitorIds}
           groupBy={sport === "nba" ? "series" : "auto"}
           empty={
             search ? (

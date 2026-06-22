@@ -9,6 +9,7 @@ import { SportTabs } from "@/components/SportTabs";
 import { isMarqueeFight } from "@/lib/marquee";
 import {
   getFavoriteMatchIds,
+  getFollowedCompetitorIds,
   getPredictions,
   predictionMatchesQuery,
   withinUpcomingWindow,
@@ -24,9 +25,10 @@ export default async function DashboardPage({
 }) {
   const { sport: sportParam, q = "" } = await searchParams;
   const sport = sportParam || "ufc";
-  const [all, favoriteIds] = await Promise.all([
+  const [all, favoriteIds, followedCompetitorIds] = await Promise.all([
     getPredictions("upcoming", sport),
     getFavoriteMatchIds(),
+    getFollowedCompetitorIds(),
   ]);
 
   const search = q.trim();
@@ -102,6 +104,7 @@ export default async function DashboardPage({
         <GroupedPredictionGrid
           predictions={predictions}
           favoriteIds={favoriteIds}
+          followedCompetitorIds={followedCompetitorIds}
           variant="premium"
           empty={
             search ? (

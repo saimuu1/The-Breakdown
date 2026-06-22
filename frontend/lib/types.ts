@@ -63,6 +63,12 @@ export interface Favorite {
   match_id: string;
 }
 
+export interface FollowedCompetitor {
+  user_id: string;
+  competitor_id: string;
+  created_at: string;
+}
+
 type Table<Row, Insert = Partial<Row>, Update = Partial<Row>> = {
   Row: Row;
   Insert: Insert;

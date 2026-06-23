@@ -1,9 +1,8 @@
 import Link from "next/link";
 
-import { BILLING_ENABLED } from "@/lib/flags";
 import { getMyPlan } from "@/lib/queries";
 import { createClient } from "@/lib/supabase/server";
-import { ProfileMenu } from "./ProfileMenu";
+import { NavActions } from "./NavActions";
 
 function Logo() {
   return (
@@ -35,56 +34,7 @@ export async function Nav() {
           </span>
         </Link>
 
-        <div className="flex items-center gap-6">
-          <Link
-            href="/dashboard"
-            className="text-sm font-medium text-[#7a8099] transition-colors duration-150 hover:text-[#e4e7f0]"
-          >
-            Upcoming
-          </Link>
-          <Link
-            href="/past"
-            className="text-sm font-medium text-[#7a8099] transition-colors duration-150 hover:text-[#e4e7f0]"
-          >
-            Past
-          </Link>
-          {user && (
-            <>
-              <Link
-                href="/favorites"
-                className="text-sm font-medium text-[#7a8099] transition-colors duration-150 hover:text-[#e4e7f0]"
-              >
-                Following
-              </Link>
-              <Link
-                href="/accuracy"
-                className="text-sm font-medium text-[#7a8099] transition-colors duration-150 hover:text-[#e4e7f0]"
-              >
-                Track record
-              </Link>
-            </>
-          )}
-
-          {BILLING_ENABLED && user && plan === "free" && (
-            <Link
-              href="/pricing"
-              className="rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-3 py-1.5 text-sm font-semibold text-emerald-400 transition-colors duration-150 hover:bg-emerald-500/15"
-            >
-              Go Pro
-            </Link>
-          )}
-
-          {user ? (
-            <ProfileMenu email={user.email ?? ""} plan={plan} />
-          ) : (
-            <Link
-              href="/login"
-              className="rounded-lg bg-emerald-500 px-4 py-1.5 text-sm font-semibold text-neutral-950 transition-colors duration-150 hover:bg-emerald-400"
-            >
-              Log in
-            </Link>
-          )}
-        </div>
+        <NavActions loggedIn={!!user} email={user?.email ?? ""} plan={plan} />
       </div>
     </nav>
   );

@@ -28,12 +28,16 @@ from app.sports.soccer.adapter import _normalize, _resolve, _top_soccer_edges
 from app.sports.soccer.features import build_current_forms, diff_features
 from app.sports.soccer.model import predict_match
 from app.sports.soccer.results import fetch_completed_matches
+from app.sports.soccer.tournament import MODEL_VERSION as WC_MODEL_VERSION
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 logger = logging.getLogger("backfill")
 
 _LLM_THROTTLE_SECONDS = 2.0
-MODEL_VERSION = "soccer-v1"
+# Use the tournament model label so completed-game predictions UPDATE the existing
+# WC rows in place (upsert key is match_id,model_version) instead of inserting a
+# duplicate. backfill_wc_predictions then sets the tournament-aware probabilities.
+MODEL_VERSION = WC_MODEL_VERSION
 
 # The shared persona, used so the write-up matches live soccer ingestion.
 try:

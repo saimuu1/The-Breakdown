@@ -1,0 +1,61 @@
+name: Refresh predictions
+
+# Keeps the live app current: pulls new fixtures, records finished games, and
+# re-predicts the World Cup with the tournament model. The frontend reads
+# Supabase directly, so this is the only thing that keeps data fresh.
+#
+# Runs twice daily (UTC) during the live World Cup; also runnable on demand from
+# the Actions tab. Required repo secrets (Settings -> Secrets and variables ->
+# Actions): SUPABASE_URL, SUPABASE_SERVICE_KEY, LLM_API_KEY.
+
+on:
+  schedule:
+    - cron: "0 9,21 * * *" # 09:00 and 21:00 UTC
+  workflow_dispatch: {} # manual "Run workflow" button
+
+# Never let two refreshes overlap (they write the same rows).
+concurrency:
+  group: refresh-predictions
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+      LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      # Order matters:
+      #   1. ingest         — new upcoming fixtures (+ analysis for new ones only)
+      #   2. soccer results  — record finished WC games in place
+      #   3. WC re-predict   — overwrite WC probs with the tournament model (last,
+      #                        so completed + upcoming all carry tournament-aware odds)
+      #   4. UFC results     — record finished UFC events
+      # Soccer rows are pinned to model_version 'wc2026-v1' everywhere, so re-runs
+      # UPDATE in place and never create duplicate predictions.
+      - name: Ingest upcoming fixtures
+        run: uv run python -m app.workers.ingest
+
+      - name: Backfill soccer results
+        run: uv run python -m scripts.backfill_soccer_results --no-llm
+
+      - name: Re-predict World Cup (tournament model)
+        run: uv run python -m scripts.backfill_wc_predictions
+
+      - name: Backfill UFC results
+        run: uv run python -m scripts.backfill_ufc_results --no-llm

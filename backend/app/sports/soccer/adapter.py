@@ -17,6 +17,7 @@ from app.llm.persona import SYSTEM_PROMPT
 from app.sports.base import RawMatch, register
 from app.sports.soccer.features import build_current_forms, diff_features
 from app.sports.soccer.model import predict_match
+from app.sports.soccer.tournament import MODEL_VERSION as WC_MODEL_VERSION
 from app.sports.soccer.upcoming import fetch_upcoming_matches
 
 # The narrative persona is shared across sports (see app/llm/persona.py); the
@@ -76,6 +77,10 @@ class SoccerAdapter:
     sport = "soccer"
     outcomes = ["home", "draw", "away"]
     system_prompt = SYSTEM_PROMPT
+    # Pin the prediction row label to the tournament model so ingest UPDATEs the
+    # existing WC rows in place instead of inserting a parallel 'soccer-v1' row.
+    # backfill_wc_predictions then overwrites the probs with tournament-aware ones.
+    model_version = WC_MODEL_VERSION
 
     def __init__(self) -> None:
         self._forms: dict[str, dict] = {}

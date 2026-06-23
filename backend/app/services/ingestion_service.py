@@ -59,8 +59,13 @@ def _ingest_match(
     repo.save_features(match_id, features)
 
     probs = adapter.predict(features)
+    # An adapter may pin its own model_version (e.g. soccer's tournament model is
+    # 'wc2026-v1'); otherwise default to '<sport>-v1'. This keeps the upsert key
+    # (match_id, model_version) aligned with existing rows so re-ingests UPDATE in
+    # place instead of inserting a duplicate prediction per match.
+    model_version = getattr(adapter, "model_version", None) or f"{adapter.sport}-v1"
     prediction_id = repo.save_prediction(
-        match_id, tier, model_version=adapter.sport + "-v1", probs=probs
+        match_id, tier, model_version=model_version, probs=probs
     )
 
     # Optional, cached LLM write-up. Adapters opt in by exposing `edges(...)`.

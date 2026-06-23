@@ -22,9 +22,11 @@ next-env.d.ts
 supabase/.branches/
 supabase/.temp/
 
-# ML artifacts (kept out of git; produced by training)
+# ML artifacts (kept out of git; produced by training) — except the small,
+# canonical v1 models the app/CI need to make predictions.
 backend/models/*.joblib
 backend/models/*.pkl
+!backend/models/*-v1.joblib
 
 # Datasets (downloaded on demand by the sport data modules; not redistributed)
 backend/data/*.csv

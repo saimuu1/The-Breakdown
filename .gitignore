@@ -1,3 +1,6 @@
+# Local editor/assistant tooling (kept out of the repo)
+.claude/
+
 # Python
 __pycache__/
 *.py[cod]

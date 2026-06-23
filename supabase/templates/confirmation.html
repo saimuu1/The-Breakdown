@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+  <body style="margin:0; padding:0; background-color:#07090e; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#07090e; padding:40px 16px;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px; background-color:#0c0f1a; border:1px solid #1e2236; border-radius:16px; overflow:hidden;">
+            <!-- Brand -->
+            <tr>
+              <td style="padding:32px 32px 0 32px;">
+                <span style="display:inline-block; font-size:13px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:#34d399;">
+                  The Breakdown
+                </span>
+              </td>
+            </tr>
+            <!-- Headline -->
+            <tr>
+              <td style="padding:20px 32px 0 32px;">
+                <h1 style="margin:0; font-size:26px; line-height:1.25; font-weight:800; color:#e4e7f0;">
+                  Confirm your email and you&rsquo;re in.
+                </h1>
+              </td>
+            </tr>
+            <!-- Body -->
+            <tr>
+              <td style="padding:16px 32px 0 32px;">
+                <p style="margin:0; font-size:15px; line-height:1.6; color:#b0b8d0;">
+                  You&rsquo;re one click away from every matchup called before the first bell &mdash;
+                  World Cup, UFC, and NBA, each with the full Breakdown analysis. Tap the button
+                  below to confirm your account and start following your teams.
+                </p>
+              </td>
+            </tr>
+            <!-- CTA -->
+            <tr>
+              <td style="padding:28px 32px 0 32px;">
+                <table role="presentation" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td style="border-radius:10px; background-color:#34d399;">
+                      <a href="{{ .ConfirmationURL }}"
+                         style="display:inline-block; padding:14px 28px; font-size:15px; font-weight:700; color:#07090e; text-decoration:none; border-radius:10px;">
+                        Confirm my email &rarr;
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <!-- Fallback link -->
+            <tr>
+              <td style="padding:24px 32px 0 32px;">
+                <p style="margin:0; font-size:13px; line-height:1.6; color:#5a607a;">
+                  Button not working? Paste this link into your browser:<br />
+                  <a href="{{ .ConfirmationURL }}" style="color:#34d399; word-break:break-all;">{{ .ConfirmationURL }}</a>
+                </p>
+              </td>
+            </tr>
+            <!-- Footer -->
+            <tr>
+              <td style="padding:28px 32px 32px 32px;">
+                <hr style="border:none; border-top:1px solid #1e2236; margin:0 0 18px 0;" />
+                <p style="margin:0; font-size:12px; line-height:1.6; color:#5a607a;">
+                  If you didn&rsquo;t create a Breakdown account, you can safely ignore this email.
+                </p>
+                <p style="margin:12px 0 0 0; font-size:11px; line-height:1.6; color:#3a3e55;">
+                  The Breakdown &middot; Predictions are for entertainment, not betting advice. 18+.
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

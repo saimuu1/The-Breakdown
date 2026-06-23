@@ -1,8 +1,8 @@
 import Link from "next/link";
 
 const SPORTS: { id: string; label: string; soon?: boolean }[] = [
-  { id: "ufc", label: "UFC" },
   { id: "soccer", label: "Soccer" },
+  { id: "ufc", label: "UFC" },
   { id: "nba", label: "NBA" },
 ];
 

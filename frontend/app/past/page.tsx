@@ -53,7 +53,7 @@ export default async function PastPage({
   searchParams: Promise<{ sport?: string; q?: string; event?: string }>;
 }) {
   const { sport: sportParam, q = "", event = "" } = await searchParams;
-  const sport = sportParam || "ufc";
+  const sport = sportParam || "soccer";
 
   // Always load the full recent past — search is done in-memory below so
   // every team / fighter name is findable without a round-trip per query.

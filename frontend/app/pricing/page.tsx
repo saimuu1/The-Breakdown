@@ -4,6 +4,7 @@ import { ManageBillingButton } from "@/components/ManageBillingButton";
 import { Nav } from "@/components/Nav";
 import { SiteFooter } from "@/components/SiteFooter";
 import { UpgradeButton } from "@/components/UpgradeButton";
+import { BILLING_ENABLED } from "@/lib/flags";
 import { getMyPlan } from "@/lib/queries";
 import { createClient } from "@/lib/supabase/server";
 
@@ -26,6 +27,41 @@ export default async function PricingPage() {
   } = await supabase.auth.getUser();
   const plan = user ? await getMyPlan() : "free";
   const isPro = plan === "pro";
+
+  // Paywall is off for now — every sport is free. Show a welcoming notice instead
+  // of a checkout that can't take real money yet.
+  if (!BILLING_ENABLED) {
+    return (
+      <div className="min-h-screen bg-[#07090e] text-[#e4e7f0]">
+        <Nav />
+        <main className="mx-auto max-w-2xl px-6 py-24 text-center">
+          <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/8 px-3 py-1 text-xs font-medium text-emerald-400">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+            Everything&apos;s free
+          </span>
+          <h1
+            className="mt-5 text-4xl font-bold tracking-tight text-[#e4e7f0]"
+            style={{ fontFamily: "var(--font-syne), system-ui, sans-serif" }}
+          >
+            Every sport, on the house
+          </h1>
+          <p className="mx-auto mt-4 max-w-md text-lg text-[#5a607a]">
+            Soccer, UFC, and NBA predictions — plus the full Breakdown analysis — are
+            all free while we&apos;re getting started. No plan to pick.
+          </p>
+          <div className="mt-8">
+            <Link
+              href={user ? "/dashboard" : "/login?next=/dashboard"}
+              className="inline-block rounded-xl bg-emerald-500 px-6 py-3 font-semibold text-neutral-950 transition-colors duration-150 hover:bg-emerald-400"
+            >
+              {user ? "Go to the board" : "Create a free account"}
+            </Link>
+          </div>
+        </main>
+        <SiteFooter />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#07090e] text-[#e4e7f0]">

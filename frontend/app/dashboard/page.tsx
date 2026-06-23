@@ -8,6 +8,7 @@ import { SearchBar } from "@/components/SearchBar";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SportTabs } from "@/components/SportTabs";
 import { UpgradeButton } from "@/components/UpgradeButton";
+import { BILLING_ENABLED } from "@/lib/flags";
 import { isMarqueeFight } from "@/lib/marquee";
 import {
   getFollowedCompetitorIds,
@@ -26,7 +27,7 @@ export default async function DashboardPage({
   searchParams: Promise<{ sport?: string; q?: string }>;
 }) {
   const { sport: sportParam, q = "" } = await searchParams;
-  const sport = sportParam || "ufc";
+  const sport = sportParam || "soccer";
   const [all, followedCompetitorIds] = await Promise.all([
     getPredictions("upcoming", sport),
     getFollowedCompetitorIds(),
@@ -51,7 +52,7 @@ export default async function DashboardPage({
   // UFC and NBA are Pro-tier sports; a free user's board for them is empty
   // because RLS hides Pro predictions. Show an upsell rather than "nothing here."
   const PRO_SPORTS = new Set(["ufc", "nba"]);
-  const lockedForFree = !!user && plan === "free" && PRO_SPORTS.has(sport);
+  const lockedForFree = BILLING_ENABLED && !!user && plan === "free" && PRO_SPORTS.has(sport);
 
   return (
     <div className="min-h-screen bg-[#07090e] text-[#e4e7f0]">

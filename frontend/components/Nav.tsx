@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { BILLING_ENABLED } from "@/lib/flags";
 import { getMyPlan } from "@/lib/queries";
 import { createClient } from "@/lib/supabase/server";
 import { ProfileMenu } from "./ProfileMenu";
@@ -64,7 +65,7 @@ export async function Nav() {
             </>
           )}
 
-          {user && plan === "free" && (
+          {BILLING_ENABLED && user && plan === "free" && (
             <Link
               href="/pricing"
               className="rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-3 py-1.5 text-sm font-semibold text-emerald-400 transition-colors duration-150 hover:bg-emerald-500/15"

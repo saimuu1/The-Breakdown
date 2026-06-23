@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { FavoriteButton } from "@/components/FavoriteButton";
+import { FollowButton } from "@/components/FollowButton";
 import { TeamCrest } from "@/components/TeamCrest";
 import { isTopTenClash } from "@/lib/marquee";
 import type { PredictionView } from "@/lib/queries";
@@ -26,18 +26,22 @@ function teaser(text: string): string {
 }
 
 function Side({
+  competitorId,
   name,
   logoUrl,
   percent,
   favored,
+  followed,
   align,
   cover,
   accent,
 }: {
+  competitorId: string;
   name: string;
   logoUrl: string | null;
   percent: number;
   favored: boolean;
+  followed: boolean;
   align: "left" | "right";
   cover: boolean;
   accent: (typeof ACCENT)[keyof typeof ACCENT];
@@ -52,9 +56,14 @@ function Side({
       >
         <TeamCrest name={name} logoUrl={logoUrl} size={cover ? 52 : 38} cover={cover} />
       </span>
-      <span className="line-clamp-2 min-h-[2.5rem] w-full text-sm font-semibold leading-tight text-[#e4e7f0]">
-        {name}
-      </span>
+      <div className={`flex min-h-[2.5rem] w-full items-start gap-1.5 ${right ? "flex-row-reverse justify-start" : "flex-row"}`}>
+        <span className="line-clamp-2 text-sm font-semibold leading-tight text-[#e4e7f0]">
+          {name}
+        </span>
+        <span className="mt-0.5 shrink-0">
+          <FollowButton competitorId={competitorId} competitorName={name} initialFollowed={followed} />
+        </span>
+      </div>
       <span
         className={`text-2xl font-bold tabular-nums leading-none ${
           favored ? accent.text : "text-[#3a3e55]"
@@ -68,12 +77,12 @@ function Side({
 
 export function FightCard({
   p,
-  favorited = false,
   spotlight = false,
+  followedCompetitorIds,
 }: {
   p: PredictionView;
-  favorited?: boolean;
   spotlight?: boolean;
+  followedCompetitorIds?: Set<string>;
 }) {
   const sportId = p.match.league.sport_id;
   const sport = SPORT_LABEL[sportId] ?? sportId;
@@ -124,16 +133,17 @@ export function FightCard({
             {sport}
           </span>
         )}
-        <FavoriteButton matchId={p.match.id} initialFavorited={favorited} />
       </div>
 
       {/* teams / fighters */}
       <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-3">
         <Side
+          competitorId={p.match.home.id}
           name={p.match.home.name}
           logoUrl={p.match.home.logo_url}
           percent={home}
           favored={favored === "home"}
+          followed={followedCompetitorIds?.has(p.match.home.id) ?? false}
           align="right"
           cover={cover}
           accent={accent}
@@ -155,10 +165,12 @@ export function FightCard({
           <span className="mt-4 text-xs font-bold uppercase tracking-widest text-[#3a3e55]">vs</span>
         )}
         <Side
+          competitorId={p.match.away.id}
           name={p.match.away.name}
           logoUrl={p.match.away.logo_url}
           percent={away}
           favored={favored === "away"}
+          followed={followedCompetitorIds?.has(p.match.away.id) ?? false}
           align="left"
           cover={cover}
           accent={accent}

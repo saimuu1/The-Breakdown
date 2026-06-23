@@ -56,6 +56,7 @@ export interface Prediction {
 export interface Profile {
   id: string;
   plan: Plan;
+  stripe_customer_id: string | null;
 }
 
 export interface Favorite {

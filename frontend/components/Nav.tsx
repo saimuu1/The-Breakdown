@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { getMyPlan } from "@/lib/queries";
 import { createClient } from "@/lib/supabase/server";
 import { ProfileMenu } from "./ProfileMenu";
 
@@ -18,6 +19,7 @@ export async function Nav() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  const plan = user ? await getMyPlan() : "free";
 
   return (
     <nav className="sticky top-0 z-20 border-b border-white/[0.05] bg-[#07090e]/90 backdrop-blur-xl">
@@ -51,7 +53,7 @@ export async function Nav() {
                 href="/favorites"
                 className="text-sm font-medium text-[#7a8099] transition-colors duration-150 hover:text-[#e4e7f0]"
               >
-                Favorites
+                Following
               </Link>
               <Link
                 href="/accuracy"
@@ -62,8 +64,17 @@ export async function Nav() {
             </>
           )}
 
+          {user && plan === "free" && (
+            <Link
+              href="/pricing"
+              className="rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-3 py-1.5 text-sm font-semibold text-emerald-400 transition-colors duration-150 hover:bg-emerald-500/15"
+            >
+              Go Pro
+            </Link>
+          )}
+
           {user ? (
-            <ProfileMenu email={user.email ?? ""} />
+            <ProfileMenu email={user.email ?? ""} plan={plan} />
           ) : (
             <Link
               href="/login"

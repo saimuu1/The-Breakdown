@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { Breakdown } from "@/components/Breakdown";
-import { FavoriteButton } from "@/components/FavoriteButton";
+import { Disclaimer } from "@/components/Disclaimer";
 import { FollowButton } from "@/components/FollowButton";
 import { Leaders } from "@/components/Leaders";
 import { Nav } from "@/components/Nav";
@@ -9,7 +9,7 @@ import { ProbabilityBar } from "@/components/ProbabilityBar";
 import { StatCompare } from "@/components/StatCompare";
 import { TeamCrest } from "@/components/TeamCrest";
 import { computeEdges } from "@/lib/featureLabels";
-import { getFavoriteMatchIds, getFollowedCompetitorIds, getMatchFeatures, getPredictionByMatch } from "@/lib/queries";
+import { getFollowedCompetitorIds, getMatchFeatures, getPredictionByMatch } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
 
@@ -58,9 +58,8 @@ async function MatchDetail({
   prediction: NonNullable<Awaited<ReturnType<typeof getPredictionByMatch>>>;
   matchId: string;
 }) {
-  const [features, favoriteIds, followedCompetitorIds] = await Promise.all([
+  const [features, followedCompetitorIds] = await Promise.all([
     getMatchFeatures(matchId),
-    getFavoriteMatchIds(),
     getFollowedCompetitorIds(),
   ]);
   const { home, away } = prediction.match;
@@ -94,34 +93,33 @@ async function MatchDetail({
           <span>{date}</span>
         </div>
 
-        <div className="flex items-start justify-between gap-4">
-          <h1
-            className="group flex flex-wrap items-center gap-3 text-3xl font-bold tracking-tight text-[#e4e7f0]"
-            style={{ fontFamily: "var(--font-syne), system-ui, sans-serif" }}
-          >
-            <span className="flex items-center gap-2">
-              <TeamCrest name={home.name} logoUrl={home.logo_url} size={32} />
-              {home.name}
-              <FollowButton
-                competitorId={home.id}
-                competitorName={home.name}
-                initialFollowed={followedCompetitorIds.has(home.id)}
-              />
-            </span>
-            <span className="text-[#3a3e55]">vs</span>
-            <span className="flex items-center gap-2">
-              <TeamCrest name={away.name} logoUrl={away.logo_url} size={32} />
-              {away.name}
-              <FollowButton
-                competitorId={away.id}
-                competitorName={away.name}
-                initialFollowed={followedCompetitorIds.has(away.id)}
-              />
-            </span>
-          </h1>
-          <FavoriteButton
-            matchId={matchId}
-            initialFavorited={favoriteIds.has(matchId)}
+        <h1
+          className="flex flex-wrap items-center gap-3 text-3xl font-bold tracking-tight text-[#e4e7f0]"
+          style={{ fontFamily: "var(--font-syne), system-ui, sans-serif" }}
+        >
+          <span className="flex items-center gap-2">
+            <TeamCrest name={home.name} logoUrl={home.logo_url} size={32} />
+            {home.name}
+          </span>
+          <span className="text-[#3a3e55]">vs</span>
+          <span className="flex items-center gap-2">
+            <TeamCrest name={away.name} logoUrl={away.logo_url} size={32} />
+            {away.name}
+          </span>
+        </h1>
+
+        {/* Follow either competitor to track them in your feed. */}
+        <div className="mt-4 flex flex-wrap gap-2">
+          <FollowButton
+            competitorId={home.id}
+            competitorName={home.name}
+            initialFollowed={followedCompetitorIds.has(home.id)}
+            variant="labeled"
+          />
+          <FollowButton
+            competitorId={away.id}
+            competitorName={away.name}
+            initialFollowed={followedCompetitorIds.has(away.id)}
             variant="labeled"
           />
         </div>
@@ -188,9 +186,10 @@ async function MatchDetail({
 
       <p className="text-xs text-[#3a3e55]">
         Model {prediction.model_version}
-        {prediction.analysis_version ? ` · analyst ${prediction.analysis_version}` : ""} · for
-        entertainment, not betting advice.
+        {prediction.analysis_version ? ` · analyst ${prediction.analysis_version}` : ""}
       </p>
+
+      <Disclaimer variant="card" />
     </article>
   );
 }

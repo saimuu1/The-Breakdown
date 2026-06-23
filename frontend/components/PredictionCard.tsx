@@ -1,6 +1,5 @@
 import Link from "next/link";
 
-import { FavoriteButton } from "@/components/FavoriteButton";
 import { FollowButton } from "@/components/FollowButton";
 import { ProbabilityBar } from "@/components/ProbabilityBar";
 import { TeamCrest } from "@/components/TeamCrest";
@@ -49,11 +48,9 @@ function ResultBadge({ p }: { p: PredictionView }) {
 
 export function PredictionCard({
   p,
-  favorited = false,
   followedCompetitorIds,
 }: {
   p: PredictionView;
-  favorited?: boolean;
   followedCompetitorIds?: Set<string>;
 }) {
   const sport = SPORT_LABEL[p.match.league.sport_id] ?? p.match.league.sport_id;
@@ -67,10 +64,7 @@ export function PredictionCard({
         <span className="rounded bg-[#181b2a] px-2 py-0.5 font-medium uppercase tracking-wide text-[#8b92a8]">
           {sport}
         </span>
-        <div className="flex items-center gap-3">
-          <span>{formatDate(p.match.starts_at)}</span>
-          <FavoriteButton matchId={p.match.id} initialFavorited={favorited} />
-        </div>
+        <span>{formatDate(p.match.starts_at)}</span>
       </div>
 
       <div className="mb-4 flex items-center justify-between gap-3">

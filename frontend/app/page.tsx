@@ -316,21 +316,41 @@ function FinalCta() {
 function Footer() {
   return (
     <footer className="border-t border-white/[0.05] bg-[#07090e]">
-      <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 py-10 text-sm text-[#4a506a] sm:flex-row">
-        <div className="flex items-center gap-2.5">
-          <Logo id="logo-foot" size={16} />
-          <span className="font-bold uppercase tracking-widest text-[#6b7390]" style={displayFont}>
-            The Breakdown
-          </span>
+      <div className="mx-auto max-w-6xl px-6 py-10">
+        <div className="flex flex-col items-center justify-between gap-4 text-sm text-[#4a506a] sm:flex-row">
+          <div className="flex items-center gap-2.5">
+            <Logo id="logo-foot" size={16} />
+            <span className="font-bold uppercase tracking-widest text-[#6b7390]" style={displayFont}>
+              The Breakdown
+            </span>
+          </div>
+          <nav className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs">
+            <Link href="/terms" className="transition-colors duration-150 hover:text-[#b0b8d0]">
+              Terms
+            </Link>
+            <Link href="/privacy" className="transition-colors duration-150 hover:text-[#b0b8d0]">
+              Privacy
+            </Link>
+            <Link
+              href="/responsible-gaming"
+              className="transition-colors duration-150 hover:text-[#b0b8d0]"
+            >
+              Responsible gaming
+            </Link>
+            <a
+              href={`mailto:${SUPPORT_EMAIL}`}
+              className="flex items-center gap-1.5 transition-colors duration-150 hover:text-[#b0b8d0]"
+            >
+              <MailIcon />
+              Support
+            </a>
+          </nav>
         </div>
-        <a
-          href={`mailto:${SUPPORT_EMAIL}`}
-          className="flex items-center gap-2 rounded-lg border border-[#1e2236] px-3 py-1.5 transition-colors duration-150 hover:border-[#2e3248] hover:text-[#b0b8d0]"
-          aria-label="Email support"
-        >
-          <MailIcon />
-          Support
-        </a>
+        <p className="mt-6 text-center text-xs leading-relaxed text-[#3a3e55] sm:text-left">
+          For informational and entertainment purposes only — not betting, investment, or financial
+          advice. No outcome is guaranteed. 18+. If gambling is a problem for you, call
+          1-800-GAMBLER.
+        </p>
       </div>
     </footer>
   );

@@ -5,20 +5,27 @@ import { useState } from "react";
 
 import { createClient } from "@/lib/supabase/client";
 
+/** Follow toggle for a single competitor (fighter / team / national team).
+   Following drives the personalized feed on /favorites. Two variants:
+   - "icon": a compact star, sits next to a name on cards.
+   - "labeled": a full pill ("☆ Follow" / "★ Following") for detail pages. */
 export function FollowButton({
   competitorId,
   competitorName,
   initialFollowed,
+  variant = "icon",
 }: {
   competitorId: string;
   competitorName: string;
   initialFollowed: boolean;
+  variant?: "icon" | "labeled";
 }) {
   const router = useRouter();
   const [followed, setFollowed] = useState(initialFollowed);
   const [busy, setBusy] = useState(false);
 
   async function toggle(e: React.MouseEvent) {
+    // Cards wrap this in a <Link>; don't navigate when following.
     e.preventDefault();
     e.stopPropagation();
     if (busy) return;
@@ -34,7 +41,7 @@ export function FollowButton({
     }
 
     const next = !followed;
-    setFollowed(next);
+    setFollowed(next); // optimistic
     if (next) {
       await supabase
         .from("followed_competitors")
@@ -50,20 +57,40 @@ export function FollowButton({
     router.refresh();
   }
 
+  const star = followed ? "★" : "☆";
+
+  if (variant === "labeled") {
+    return (
+      <button
+        onClick={toggle}
+        disabled={busy}
+        aria-pressed={followed}
+        className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors duration-150 ${
+          followed
+            ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/15"
+            : "border-[#272b3f] text-[#b0b8d0] hover:border-emerald-500/40 hover:text-emerald-400"
+        }`}
+      >
+        <span className="text-base leading-none">{star}</span>
+        {followed ? "Following" : `Follow ${competitorName}`}
+      </button>
+    );
+  }
+
   return (
     <button
       onClick={toggle}
       disabled={busy}
       aria-label={followed ? `Unfollow ${competitorName}` : `Follow ${competitorName}`}
       aria-pressed={followed}
-      title={followed ? `Unfollow ${competitorName}` : `Follow ${competitorName}`}
-      className={`flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-bold leading-none transition-all duration-150 ${
+      title={followed ? `Following ${competitorName}` : `Follow ${competitorName}`}
+      className={`text-base leading-none transition-colors duration-150 ${
         followed
-          ? "bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/30"
-          : "bg-transparent text-[#3a3e55] ring-1 ring-[#2a2e42] hover:text-[#b0b8d0] hover:ring-[#3a3e55]"
-      } opacity-0 group-hover:opacity-100 ${followed ? "!opacity-100" : ""}`}
+          ? "text-emerald-400 hover:text-emerald-300"
+          : "text-[#5a607a] hover:text-emerald-400"
+      }`}
     >
-      {followed ? "✓" : "+"}
+      {star}
     </button>
   );
 }

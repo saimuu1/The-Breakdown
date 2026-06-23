@@ -32,12 +32,6 @@ const SELECT = `
   )
 `;
 
-function sortByStart(rows: PredictionView[]): PredictionView[] {
-  return [...rows].sort(
-    (a, b) => new Date(a.match.starts_at).getTime() - new Date(b.match.starts_at).getTime(),
-  );
-}
-
 type DB = Awaited<ReturnType<typeof createClient>>;
 
 /** Fetch RLS-gated predictions for a set of match ids, restored to the given
@@ -213,20 +207,15 @@ export async function getPredictionByMatch(matchId: string): Promise<PredictionV
   return (data as unknown as PredictionView) ?? null;
 }
 
-/** The set of match ids the current user has favorited (empty if logged out). */
-export async function getFavoriteMatchIds(): Promise<Set<string>> {
+/** The current user's plan ("free" when logged out or no profile). */
+export async function getMyPlan(): Promise<"free" | "pro"> {
   const supabase = await createClient();
-  const { data } = await supabase.from("favorites").select("match_id");
-  return new Set(((data ?? []) as { match_id: string }[]).map((f) => f.match_id));
-}
-
-/** Predictions for the user's favorited matches (RLS-gated), soonest first. */
-export async function getFavoritePredictions(): Promise<PredictionView[]> {
-  const favs = await getFavoriteMatchIds();
-  if (favs.size === 0) return [];
-  const supabase = await createClient();
-  const rows = await predictionsForMatches(supabase, [...favs]);
-  return sortByStart(rows);
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return "free";
+  const { data } = await supabase.from("profiles").select("plan").eq("id", user.id).maybeSingle();
+  return ((data as { plan?: string } | null)?.plan === "pro" ? "pro" : "free");
 }
 
 /** The set of competitor ids the current user follows (empty if logged out). */
@@ -234,6 +223,43 @@ export async function getFollowedCompetitorIds(): Promise<Set<string>> {
   const supabase = await createClient();
   const { data } = await supabase.from("followed_competitors").select("competitor_id");
   return new Set(((data ?? []) as { competitor_id: string }[]).map((r) => r.competitor_id));
+}
+
+export interface FollowedCompetitor {
+  id: string;
+  name: string;
+  logo_url: string | null;
+  sport: string;
+}
+
+/** The competitors the current user follows, with name / logo / sport, for the
+   "Following" management list. Alphabetical. */
+export async function getFollowedCompetitors(): Promise<FollowedCompetitor[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("followed_competitors")
+    .select("competitor:competitors(id, name, logo_url, league:leagues(sport_id))");
+
+  type Row = {
+    competitor: {
+      id: string;
+      name: string;
+      logo_url: string | null;
+      league: { sport_id: string } | null;
+    } | null;
+  };
+
+  const out: FollowedCompetitor[] = [];
+  for (const r of (data ?? []) as unknown as Row[]) {
+    if (!r.competitor) continue;
+    out.push({
+      id: r.competitor.id,
+      name: r.competitor.name,
+      logo_url: r.competitor.logo_url,
+      sport: r.competitor.league?.sport_id ?? "unknown",
+    });
+  }
+  return out.sort((a, b) => a.name.localeCompare(b.name));
 }
 
 /** Stored feature differentials for a match (sport-specific inputs). */

@@ -1,8 +1,11 @@
 import Link from "next/link";
 
 import { FeedCard } from "@/components/FeedCard";
+import { FollowingList } from "@/components/FollowingList";
 import { Nav } from "@/components/Nav";
+import { SiteFooter } from "@/components/SiteFooter";
 import { getFeed } from "@/lib/feed";
+import { getFollowedCompetitors } from "@/lib/queries";
 import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -36,11 +39,12 @@ export default async function FavoritesPage() {
             Log in
           </Link>
         </main>
+        <SiteFooter />
       </div>
     );
   }
 
-  const items = await getFeed();
+  const [items, following] = await Promise.all([getFeed(), getFollowedCompetitors()]);
 
   return (
     <div className="min-h-screen bg-[#07090e] text-[#e4e7f0]">
@@ -54,22 +58,21 @@ export default async function FavoritesPage() {
             Your feed
           </h1>
           <p className="mt-2 text-[#5a607a]">
-            {items.length > 0
+            {following.length > 0
               ? "The most important developments for the teams and fighters you follow."
               : "Follow teams and fighters to see what matters."}
           </p>
         </header>
 
+        <FollowingList following={following} />
+
         {items.length === 0 ? (
-          <EmptyFeed />
+          <EmptyFeed hasFollows={following.length > 0} />
         ) : (
           <FeedGroups items={items} />
         )}
-
-        <div className="mt-10 border-t border-[#1e2236] pt-6 text-center text-xs text-[#3a3e55]">
-          Follow teams and fighters from any prediction card or match page.
-        </div>
       </main>
+      <SiteFooter />
     </div>
   );
 }
@@ -104,14 +107,27 @@ function FeedGroups({ items }: { items: Awaited<ReturnType<typeof getFeed>> }) {
   );
 }
 
-function EmptyFeed() {
+function EmptyFeed({ hasFollows }: { hasFollows: boolean }) {
+  if (hasFollows) {
+    return (
+      <div className="rounded-2xl border border-dashed border-[#1e2236] p-12 text-center">
+        <p className="text-lg font-medium text-[#b0b8d0]">Nothing new right now.</p>
+        <p className="mt-2 max-w-sm mx-auto text-sm text-[#5a607a]">
+          We&apos;re tracking everyone you follow. Their next match, latest result,
+          and streaks will show up here as they happen.
+        </p>
+      </div>
+    );
+  }
   return (
     <div className="rounded-2xl border border-dashed border-[#1e2236] p-12 text-center">
-      <p className="text-lg font-medium text-[#b0b8d0]">Your feed is empty.</p>
+      <p className="text-lg font-medium text-[#b0b8d0]">Follow a fighter or team to start.</p>
       <p className="mt-2 max-w-sm mx-auto text-sm text-[#5a607a]">
-        Hover over any team or fighter name on a prediction card and tap{" "}
-        <span className="rounded bg-[#1e2236] px-1 py-0.5 font-mono text-xs text-[#b0b8d0]">+</span>{" "}
-        to follow them. Their upcoming matches, results, and streaks will appear here.
+        Tap the{" "}
+        <span className="font-semibold text-emerald-400">★</span>{" "}
+        next to any fighter or team — on a prediction card or its match page — to follow
+        them. Their upcoming matches, results, and streaks appear here, ranked by what
+        matters most.
       </p>
       <div className="mt-6 flex flex-wrap justify-center gap-3">
         <Link

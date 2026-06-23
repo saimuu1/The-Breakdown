@@ -5,11 +5,13 @@ import { GroupedPredictionGrid } from "@/components/GroupedPredictionGrid";
 import { Nav } from "@/components/Nav";
 import { RealtimeRefresher } from "@/components/RealtimeRefresher";
 import { SearchBar } from "@/components/SearchBar";
+import { SiteFooter } from "@/components/SiteFooter";
 import { SportTabs } from "@/components/SportTabs";
+import { UpgradeButton } from "@/components/UpgradeButton";
 import { isMarqueeFight } from "@/lib/marquee";
 import {
-  getFavoriteMatchIds,
   getFollowedCompetitorIds,
+  getMyPlan,
   getPredictions,
   predictionMatchesQuery,
   withinUpcomingWindow,
@@ -25,9 +27,8 @@ export default async function DashboardPage({
 }) {
   const { sport: sportParam, q = "" } = await searchParams;
   const sport = sportParam || "ufc";
-  const [all, favoriteIds, followedCompetitorIds] = await Promise.all([
+  const [all, followedCompetitorIds] = await Promise.all([
     getPredictions("upcoming", sport),
-    getFavoriteMatchIds(),
     getFollowedCompetitorIds(),
   ]);
 
@@ -45,6 +46,12 @@ export default async function DashboardPage({
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  const plan = user ? await getMyPlan() : "free";
+
+  // UFC and NBA are Pro-tier sports; a free user's board for them is empty
+  // because RLS hides Pro predictions. Show an upsell rather than "nothing here."
+  const PRO_SPORTS = new Set(["ufc", "nba"]);
+  const lockedForFree = !!user && plan === "free" && PRO_SPORTS.has(sport);
 
   return (
     <div className="min-h-screen bg-[#07090e] text-[#e4e7f0]">
@@ -93,7 +100,7 @@ export default async function DashboardPage({
                 <FightCard
                   key={p.id}
                   p={p}
-                  favorited={favoriteIds.has(p.match.id)}
+                  followedCompetitorIds={followedCompetitorIds}
                   spotlight
                 />
               ))}
@@ -103,23 +110,46 @@ export default async function DashboardPage({
 
         <GroupedPredictionGrid
           predictions={predictions}
-          favoriteIds={favoriteIds}
           followedCompetitorIds={followedCompetitorIds}
           variant="premium"
           empty={
             search ? (
               <p className="text-[#b0b8d0]">No upcoming predictions match &ldquo;{search}&rdquo;.</p>
+            ) : lockedForFree ? (
+              <ProUpsell sport={sport} />
             ) : (
               <EmptyMessage sport={sport} loggedIn={!!user} />
             )
           }
         />
       </main>
+      <SiteFooter />
     </div>
   );
 }
 
 const SPORT_NAME: Record<string, string> = { ufc: "UFC", soccer: "Soccer", nba: "NBA" };
+
+function ProUpsell({ sport }: { sport: string }) {
+  const name = SPORT_NAME[sport] ?? sport;
+  return (
+    <div className="flex flex-col items-center">
+      <span className="rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-bold uppercase tracking-widest text-emerald-400">
+        Pro
+      </span>
+      <p className="mt-4 text-lg font-semibold text-[#e4e7f0]">
+        {name} predictions are a Pro feature.
+      </p>
+      <p className="mx-auto mt-2 max-w-md text-sm text-[#5a607a]">
+        Unlock every {name} pick — plus NBA and the full Breakdown analysis on every card —
+        with Pro. Soccer stays free.
+      </p>
+      <div className="mt-6">
+        <UpgradeButton>Go Pro — $9/mo</UpgradeButton>
+      </div>
+    </div>
+  );
+}
 
 function EmptyMessage({ sport, loggedIn }: { sport: string; loggedIn: boolean }) {
   // NBA is between seasons — be explicit that games will populate automatically

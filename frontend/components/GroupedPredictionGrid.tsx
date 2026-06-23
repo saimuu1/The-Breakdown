@@ -90,14 +90,12 @@ function groupBySeries(predictions: PredictionView[]): Group[] {
 export function GroupedPredictionGrid({
   predictions,
   empty,
-  favoriteIds,
   followedCompetitorIds,
   variant = "default",
   groupBy = "auto",
 }: {
   predictions: PredictionView[];
   empty: React.ReactNode;
-  favoriteIds?: Set<string>;
   followedCompetitorIds?: Set<string>;
   variant?: "default" | "premium";
   groupBy?: "auto" | "series";
@@ -146,12 +144,11 @@ export function GroupedPredictionGrid({
           <div className="grid gap-4 sm:grid-cols-2">
             {g.preds.map((p) =>
               premium ? (
-                <FightCard key={p.id} p={p} favorited={favoriteIds?.has(p.match.id) ?? false} />
+                <FightCard key={p.id} p={p} followedCompetitorIds={followedCompetitorIds} />
               ) : (
                 <PredictionCard
                   key={p.id}
                   p={p}
-                  favorited={favoriteIds?.has(p.match.id) ?? false}
                   followedCompetitorIds={followedCompetitorIds}
                 />
               ),

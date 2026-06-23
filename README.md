@@ -6,7 +6,7 @@
 
 A full-stack sports prediction platform that forecasts **World Cup soccer, UFC fights, and NBA games**, ships every pick with an AI-written breakdown grounded in real stats, and grades itself honestly against the betting market.
 
-[Live demo](https://the-breakdown.vercel.app) · [Architecture](#-architecture-the-part-im-proud-of) · [ML approach](#-the-models-honest-by-design)
+[Architecture](#-architecture-the-part-im-proud-of) · [ML approach](#-the-models-honest-by-design) · [Who it's for](#who-its-for)
 
 `Next.js 16` · `React 19` · `TypeScript` · `FastAPI` · `Python` · `Supabase/Postgres` · `scikit-learn` · `XGBoost` · `Stripe` · `GitHub Actions`
 
@@ -16,11 +16,22 @@ A full-stack sports prediction platform that forecasts **World Cup soccer, UFC f
 
 ## Why I built this
 
-I love sports, and I love the moment right before a fight or a match when everyone has an opinion but nobody actually *knows*. I wanted to build the thing I always wished existed: not a betting site, but a place that makes an honest, data-backed call on every matchup — and then **explains itself** in plain language, like a commentator breaking down the tape.
+I love sports, and I love the moment right before a fight or a match when everyone has an opinion but nobody actually *knows*. I wanted to build the thing I always wished existed: not a sportsbook, but a place that makes an honest, data-backed call on every matchup — and then **explains itself** in plain language, like a commentator breaking down the tape.
 
 So I built it end to end. Not a toy, not a tutorial clone — a real product with accounts, a machine-learning pipeline, an AI analysis layer, a database that enforces its own security rules, automated data updates, billing, and legal pages. Everything you'd need to actually put in front of users. This README is the tour.
 
 > **The honest part I care about most:** the app benchmarks its own accuracy against the de-vigged betting market and shows the numbers — wins *and* losses. No cherry-picking. If the model is worse than Vegas on a sport, the `/accuracy` page says so.
+
+## Who it's for
+
+Sports fans who want a sharper read on a matchup, anyone who likes the data behind the drama — and **bettors**, who can use The Breakdown as one research input alongside their own judgment.
+
+A few things I want to be upfront about:
+
+- **These are probabilities, not promises.** A 64% favorite still loses roughly one time in three. The model is frequently beaten by the betting market — the `/accuracy` page shows exactly where and when.
+- **It is not betting or financial advice.** It doesn't tell you what to wager or guarantee any outcome. It's a model's opinion; you bring your own.
+- **You know things the model doesn't** — a late injury, locker-room news, your own gut feel. Treat the breakdown as a starting point for your own thinking, never the final word.
+- **If you do bet, bet responsibly.** 18+, entertainment only. If gambling stops being fun, step away or get help — [ncpgambling.org](https://www.ncpgambling.org/) · 1-800-GAMBLER.
 
 ---
 
@@ -162,6 +173,6 @@ cd frontend && npm run lint && npx tsc --noEmit && npm run build
 
 <div align="center">
 
-*Built because I wanted it to exist. Predictions are for entertainment, not betting advice.*
+*Built because I wanted it to exist. The Breakdown is a data tool for fans and bettors alike — a model's opinion, not betting advice, and never a guarantee. 18+.*
 
 </div>

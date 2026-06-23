@@ -41,8 +41,8 @@ A few things I want to be upfront about:
 - **🎙️ "The Breakdown" — AI analysis on every pick.** An LLM writes a broadcast-style breakdown of each matchup, but it's **grounded**: the prompt only ever sees real model features and stat edges, so it names the actual factors driving the prediction instead of hallucinating.
 - **⭐ A personalized feed.** Follow any team or fighter and get an **importance-ranked feed** — a final weighs heavier than a group game, a playoff heavier than a regular-season night.
 - **📊 An honest track record.** A dedicated accuracy page scores the model with **Brier score and log-loss vs. the betting market**, plus calibration charts.
-- **🔐 Real accounts + tiered access.** Email auth, an age gate, and database-enforced multi-tenancy — the paywall lives in Postgres, not just the UI.
-- **💳 Subscription billing.** A complete Stripe checkout → webhook → customer-portal flow (in test mode), gated so only the webhook can grant access.
+- **🔐 Real accounts + database-enforced access control.** Email auth, an age gate, and Row-Level Security written so access rules live in Postgres, not just the UI. (Tiered free/pro gating is fully built and RLS-verified — currently toggled to **all-free** for launch via a single flag.)
+- **💳 Subscription billing.** A complete Stripe checkout → webhook → customer-portal flow, built and tested in Stripe test mode, gated so only the webhook can grant access. **Currently disabled** — every sport is free right now; flipping one flag re-enables the paywall with no code changes.
 - **🔄 It keeps itself current.** A scheduled job pulls new fixtures, records finished games, and re-runs predictions twice a day — no human in the loop.
 
 ---
@@ -90,7 +90,7 @@ Each sport has its own trained, versioned model:
 | **Soccer** | A **tournament-aware** World Cup model: pre-tournament ELO + form + experience, blended by round with what's actually happened in the bracket so far. Conservative — an upset nudges the odds, it doesn't rewrite them. |
 | **NBA** | Team-form model, series-aware for the playoffs (Game 5 of a series ≠ Game 1). |
 
-Held-out UFC example: model **Brier 0.233** vs. de-vigged market **0.200** (n ≈ 1,374). The market is sharp and hard to beat — and rather than hide that, the app **shows** it. That honesty is the point.
+Held-out UFC: model **Brier 0.233** (n = 1,706 test bouts) vs. de-vigged market **0.200** (n = 1,374, the subset with odds). The market is sharp and hard to beat — and rather than hide that, the app **shows** it. That honesty is the point.
 
 ---
 
@@ -165,7 +165,9 @@ cd frontend && npm run lint && npx tsc --noEmit && npm run build
 
 ## 🗺 Status & roadmap
 
-**Live now:** all three sports end to end · grounded AI analysis · personalized following feed · honest accuracy tracking · auth + RLS multi-tenancy · Stripe billing (test mode) · automated twice-daily data refresh · CI on every push.
+**Live now:** all three sports end to end · grounded AI analysis · personalized following feed · honest accuracy tracking · auth + RLS multi-tenancy · automated twice-daily data refresh · CI on every push.
+
+**Built but currently off:** Stripe subscription billing + free/pro tier gating — fully implemented and test-mode verified, but toggled to all-free for launch (one flag re-enables it). NBA is in its off-season, so its board is empty until the next season tips off.
 
 **Next up:** club soccer leagues (Premier League / La Liga / Champions League), richer per-player stat context in the analysis, and flipping billing live.
 

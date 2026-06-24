@@ -51,7 +51,7 @@ export default async function PricingPage() {
           </p>
           <div className="mt-8">
             <Link
-              href={user ? "/dashboard" : "/login?next=/dashboard"}
+              href={user ? "/dashboard" : "/login?next=/dashboard&mode=signup"}
               className="inline-block rounded-xl bg-emerald-500 px-6 py-3 font-semibold text-neutral-950 transition-colors duration-150 hover:bg-emerald-400"
             >
               {user ? "Go to the board" : "Create a free account"}

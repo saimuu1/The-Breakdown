@@ -197,7 +197,7 @@ function EmptyMessage({ sport, loggedIn }: { sport: string; loggedIn: boolean })
           A free account unlocks every Soccer, UFC, and NBA prediction — upcoming and past.
         </p>
         <Link
-          href="/login?next=/dashboard"
+          href="/login?next=/dashboard&mode=signup"
           className="mt-5 inline-block rounded-lg bg-emerald-500 px-4 py-2 font-semibold text-neutral-950 transition-colors duration-150 hover:bg-emerald-400"
         >
           Create a free account

@@ -17,11 +17,25 @@ function Logo() {
   );
 }
 
+/** Turn raw Supabase auth errors into something a person wants to read. */
+function friendlyError(message: string): string {
+  const m = message.toLowerCase();
+  if (m.includes("invalid login")) return "Wrong email or password.";
+  if (m.includes("already registered") || m.includes("already been registered")) {
+    return "That email already has an account — log in instead.";
+  }
+  if (m.includes("rate limit")) return "Too many attempts. Please wait a minute and try again.";
+  if (m.includes("at least 6")) return "Password must be at least 6 characters.";
+  return message;
+}
+
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const next = searchParams.get("next") || "/dashboard";
-  const [mode, setMode] = useState<"login" | "signup">("login");
+  const [mode, setMode] = useState<"login" | "signup">(
+    searchParams.get("mode") === "signup" ? "signup" : "login",
+  );
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [agreed, setAgreed] = useState(false);
@@ -44,7 +58,7 @@ function LoginForm() {
 
     if (mode === "login") {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) setError(error.message);
+      if (error) setError(friendlyError(error.message));
       else {
         router.push(next);
         router.refresh();
@@ -52,7 +66,7 @@ function LoginForm() {
     } else {
       // Record consent durably in the user's auth metadata — proof of age
       // confirmation + terms acceptance without a separate table/migration.
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -62,8 +76,15 @@ function LoginForm() {
           },
         },
       });
-      if (error) setError(error.message);
-      else setNotice("Account created. If email confirmation is on, check your inbox, then log in.");
+      if (error) setError(friendlyError(error.message));
+      else if (data.session) {
+        // Email confirmation is off → the user is already signed in. Go straight in.
+        router.push(next);
+        router.refresh();
+      } else {
+        // Email confirmation is on → they must verify before they can sign in.
+        setNotice("Account created — check your inbox to confirm your email, then log in.");
+      }
     }
     setLoading(false);
   }

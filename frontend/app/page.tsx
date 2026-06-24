@@ -59,7 +59,7 @@ function Hero() {
         </p>
         <div className="flex flex-wrap items-center gap-4">
           <Link
-            href="/login?next=/dashboard"
+            href="/login?next=/dashboard&mode=signup"
             className="rounded-lg bg-emerald-500 px-5 py-2.5 font-semibold text-neutral-950 transition-colors duration-150 hover:bg-emerald-400"
           >
             Create a free account
@@ -300,7 +300,7 @@ function FinalCta() {
             upcoming — with the full breakdown behind each one.
           </p>
           <Link
-            href="/login?next=/dashboard"
+            href="/login?next=/dashboard&mode=signup"
             className="mt-8 inline-block rounded-lg bg-emerald-500 px-7 py-3.5 font-semibold text-neutral-950 transition-colors duration-150 hover:bg-emerald-400"
           >
             Create a free account

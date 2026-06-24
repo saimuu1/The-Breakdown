@@ -13,12 +13,20 @@ function unit(sportId: string, n: number): string {
   return n === 1 ? one : many;
 }
 
+// Dates are formatted (and grouped) in US Eastern, not the server's zone. This
+// page renders server-side where the runtime zone is UTC, so an evening US match
+// stored as early-UTC (e.g. 02:00 UTC) would otherwise display on the *next*
+// calendar day. Pinning a real zone keeps the date matching when the game
+// actually happened for a US audience.
+const DISPLAY_TZ = "America/New_York";
+
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-US", {
     weekday: "short",
     month: "short",
     day: "numeric",
     year: "numeric",
+    timeZone: DISPLAY_TZ,
   });
 }
 

@@ -71,6 +71,7 @@ async function MatchDetail({
     month: "long",
     day: "numeric",
     year: "numeric",
+    timeZone: "America/New_York", // pin US Eastern so dates match when games happened, not server UTC
   });
 
   const [pickKey, pickProb] = Object.entries(prediction.probs).reduce((a, b) =>

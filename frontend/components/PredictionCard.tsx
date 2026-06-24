@@ -16,6 +16,7 @@ function formatDate(iso: string): string {
     month: "short",
     day: "numeric",
     year: "numeric",
+    timeZone: "America/New_York", // see GroupedPredictionGrid: pin US Eastern, not the server's UTC
   });
 }
 

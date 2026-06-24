@@ -8,7 +8,7 @@ A full-stack sports prediction platform that forecasts **World Cup soccer, UFC f
 
 [Architecture](#-architecture-the-part-im-proud-of) · [ML approach](#-the-models-honest-by-design) · [Who it's for](#who-its-for)
 
-`Next.js 16` · `React 19` · `TypeScript` · `FastAPI` · `Python` · `Supabase/Postgres` · `scikit-learn` · `XGBoost` · `Stripe` · `GitHub Actions`
+`Next.js 16` · `React 19` · `TypeScript` · `FastAPI` · `Python` · `Supabase/Postgres` · `scikit-learn` · `XGBoost` · `GitHub Actions`
 
 </div>
 
@@ -18,7 +18,7 @@ A full-stack sports prediction platform that forecasts **World Cup soccer, UFC f
 
 I love sports, and I love the moment right before a fight or a match when everyone has an opinion but nobody actually *knows*. I wanted to build the thing I always wished existed: not a sportsbook, but a place that makes an honest, data-backed call on every matchup — and then **explains itself** in plain language, like a commentator breaking down the tape.
 
-So I built it end to end. Not a toy, not a tutorial clone — a real product with accounts, a machine-learning pipeline, an AI analysis layer, a database that enforces its own security rules, automated data updates, billing, and legal pages. Everything you'd need to actually put in front of users. This README is the tour.
+So I built it end to end. Not a toy, not a tutorial clone — a real product with accounts, a machine-learning pipeline, an AI analysis layer, a database that enforces its own security rules, automated data updates, personalized experiences, and legal pages. Everything you'd need to actually put in front of users. This README is the tour.
 
 > **The honest part I care about most:** the app benchmarks its own accuracy against the de-vigged betting market and shows the numbers — wins *and* losses. No cherry-picking. If the model is worse than Vegas on a sport, the `/accuracy` page says so.
 
@@ -28,22 +28,22 @@ Sports fans who want a sharper read on a matchup, anyone who likes the data behi
 
 A few things I want to be upfront about:
 
-- **These are probabilities, not promises.** A 64% favorite still loses roughly one time in three. The model is frequently beaten by the betting market — the `/accuracy` page shows exactly where and when.
-- **It is not betting or financial advice.** It doesn't tell you what to wager or guarantee any outcome. It's a model's opinion; you bring your own.
-- **You know things the model doesn't** — a late injury, locker-room news, your own gut feel. Treat the breakdown as a starting point for your own thinking, never the final word.
-- **If you do bet, bet responsibly.** 18+, entertainment only. If gambling stops being fun, step away or get help — [ncpgambling.org](https://www.ncpgambling.org/) · 1-800-GAMBLER.
+* **These are probabilities, not promises.** A 64% favorite still loses roughly one time in three. The model is frequently beaten by the betting market — the `/accuracy` page shows exactly where and when.
+* **It is not betting or financial advice.** It doesn't tell you what to wager or guarantee any outcome. It's a model's opinion; you bring your own.
+* **You know things the model doesn't** — a late injury, locker-room news, your own gut feel. Treat the breakdown as a starting point for your own thinking, never the final word.
+* **If you do bet, bet responsibly.** 18+, entertainment only. If gambling stops being fun, step away or get help — [ncpgambling.org](https://www.ncpgambling.org/) · 1-800-GAMBLER.
 
 ---
 
 ## What it does
 
-- **🔮 Predictions for three sports** — group-stage-to-final World Cup matches, UFC fight cards, and NBA games, each with win probabilities computed from a trained model.
-- **🎙️ "The Breakdown" — AI analysis on every pick.** An LLM writes a broadcast-style breakdown of each matchup, but it's **grounded**: the prompt only ever sees real model features and stat edges, so it names the actual factors driving the prediction instead of hallucinating.
-- **⭐ A personalized feed.** Follow any team or fighter and get an **importance-ranked feed** — a final weighs heavier than a group game, a playoff heavier than a regular-season night.
-- **📊 An honest track record.** A dedicated accuracy page scores the model with **Brier score and log-loss vs. the betting market**, plus calibration charts.
-- **🔐 Real accounts + database-enforced access control.** Email auth, an age gate, and Row-Level Security written so access rules live in Postgres, not just the UI. (Tiered free/pro gating is fully built and RLS-verified — currently toggled to **all-free** for launch via a single flag.)
-- **💳 Subscription billing.** A complete Stripe checkout → webhook → customer-portal flow, built and tested in Stripe test mode, gated so only the webhook can grant access. **Currently disabled** — every sport is free right now; flipping one flag re-enables the paywall with no code changes.
-- **🔄 It keeps itself current.** A scheduled job pulls new fixtures, records finished games, and re-runs predictions twice a day — no human in the loop.
+* **🔮 Predictions for three sports** — group-stage-to-final World Cup matches, UFC fight cards, and NBA games, each with win probabilities computed from a trained model.
+* **🎙️ "The Breakdown" — AI analysis on every pick.** An LLM writes a broadcast-style breakdown of each matchup, but it's **grounded**: the prompt only ever sees real model features and stat edges, so it names the actual factors driving the prediction instead of hallucinating.
+* **⭐ A personalized feed.** Follow any team or fighter and get an **importance-ranked feed** — a final weighs heavier than a group game, a playoff heavier than a regular-season night.
+* **📊 An honest track record.** A dedicated accuracy page scores the model with **Brier score and log-loss vs. the betting market**, plus calibration charts.
+* **🔐 Real accounts + database-enforced access control.** Email auth, an age gate, and Row-Level Security written so access rules live in Postgres, not just the UI. User-specific data, follows, and preferences are protected directly by the database rather than trusted client code.
+* **📁 Personalized experience.** Maintain your own follows, feed, and account preferences while database-level security ensures users only access their own data.
+* **🔄 It keeps itself current.** A scheduled job pulls new fixtures, records finished games, and re-runs predictions twice a day — no human in the loop.
 
 ---
 
@@ -51,32 +51,32 @@ A few things I want to be upfront about:
 
 The core decision: **let each tool do what it's best at, and define a clean boundary between them.**
 
-```
+```text
                         ┌─────────────────────────────────────┐
-   Browser  ──reads──▶  │  Supabase (Postgres + Auth + RLS)    │
-                        │  auth · CRUD · prediction reads      │
+   Browser  ──reads──▶  │  Supabase (Postgres + Auth + RLS)  │
+                        │  auth · CRUD · prediction reads    │
                         └─────────────────────────────────────┘
                                      ▲ writes
                                      │
                         ┌─────────────────────────────────────┐
-   GitHub Actions ───▶  │  FastAPI backend (Python)            │
-   (twice-daily cron)   │  ML inference · ingestion pipeline   │
-                        │  LLM analysis · Stripe webhook       │
+   GitHub Actions ───▶  │  FastAPI backend (Python)          │
+   (twice-daily cron)   │  ML inference · ingestion pipeline │
+                        │  LLM analysis                      │
                         └─────────────────────────────────────┘
 ```
 
 **The frontend reads predictions directly from Supabase** — most page loads never touch the backend. Postgres **Row-Level Security** decides who sees what, so access control can't be bypassed by hitting an API differently.
 
-**The Python backend owns only what a managed backend can't:** ML inference, a fault-tolerant data pipeline, LLM generation, and the Stripe webhook. It writes finished predictions into Supabase; the frontend reads them out. No reinventing auth or CRUD.
+**The Python backend owns only what a managed backend can't:** ML inference, a fault-tolerant data pipeline, prediction generation, and LLM analysis. It writes finished predictions into Supabase; the frontend reads them out. No reinventing auth or CRUD.
 
 ### Engineering highlights
 
-- **🧩 A sport-agnostic pipeline via the adapter pattern.** The ingestion service never names a sport — it loops over a registry of `SportAdapter`s. Adding a sport means writing one module and calling `register()`; the pipeline, schema, and analysis layer don't change. Soccer (three-way outcomes, neutral venues), UFC (binary, per-fighter tale-of-the-tape), and NBA (binary, team form) all plug into the same machinery.
-- **🛡️ Multi-tenancy enforced by the database.** Tier gating and per-user data (follows, plan) are RLS policies, verified end-to-end by a script: anonymous users see nothing, free users see the free tier, pro users see everything — enforced by Postgres, not trusted client code. A security fix mid-build: I removed a policy that let users self-upgrade their own plan, so **only the Stripe webhook (service role) can grant access.**
-- **🚫 No data leakage in features.** Every model feature is computed **point-in-time** — a fighter's form is built only from bouts *before* the fight date; World Cup ELO is frozen before the tournament starts. Home/away is randomized to kill positional artifacts, and betting odds are deliberately excluded from inputs so the market stays an independent benchmark.
-- **♻️ Idempotent by design.** Re-running the pipeline updates rows in place instead of duplicating them — I hunted down and fixed a subtle bug where one sport's predictions were keyed differently and silently double-writing.
-- **🤖 Grounded LLM generation.** A provider-agnostic client with retry/backoff and generate-once-and-cache (re-runs skip existing write-ups), plus tests that assert the prompt receives *only* real model fields — no fabricated stats.
-- **⚙️ Shipped like production.** CI runs lint + type-check + tests + build on every push (backend and frontend); a separate scheduled workflow keeps the live data fresh.
+* **🧩 A sport-agnostic pipeline via the adapter pattern.** The ingestion service never names a sport — it loops over a registry of `SportAdapter`s. Adding a sport means writing one module and calling `register()`; the pipeline, schema, and analysis layer don't change. Soccer (three-way outcomes, neutral venues), UFC (binary, per-fighter tale-of-the-tape), and NBA (binary, team form) all plug into the same machinery.
+* **🛡️ Security enforced by the database.** User-specific data (follows, preferences, and account information) is protected through Row-Level Security policies verified end-to-end by automated tests. Access rules live in Postgres itself rather than relying on trusted frontend code.
+* **🚫 No data leakage in features.** Every model feature is computed **point-in-time** — a fighter's form is built only from bouts *before* the fight date; World Cup ELO is frozen before the tournament starts. Home/away is randomized to kill positional artifacts, and betting odds are deliberately excluded from inputs so the market stays an independent benchmark.
+* **♻️ Idempotent by design.** Re-running the pipeline updates rows in place instead of duplicating them — I hunted down and fixed a subtle bug where one sport's predictions were keyed differently and silently double-writing.
+* **🤖 Grounded LLM generation.** A provider-agnostic client with retry/backoff and generate-once-and-cache (re-runs skip existing write-ups), plus tests that assert the prompt receives *only* real model fields — no fabricated stats.
+* **⚙️ Shipped like production.** CI runs lint + type-check + tests + build on every push (backend and frontend); a separate scheduled workflow keeps the live data fresh.
 
 ---
 
@@ -84,24 +84,29 @@ The core decision: **let each tool do what it's best at, and define a clean boun
 
 Each sport has its own trained, versioned model:
 
-| Sport | Approach |
-|---|---|
-| **UFC** | Logistic regression / XGBoost on self-computed per-fighter career form from raw UFCStats data (1994–present), time-split for training. |
+| Sport      | Approach                                                                                                                                                                                                                |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **UFC**    | Logistic regression / XGBoost on self-computed per-fighter career form from raw UFCStats data (1994–present), time-split for training.                                                                                  |
 | **Soccer** | A **tournament-aware** World Cup model: pre-tournament ELO + form + experience, blended by round with what's actually happened in the bracket so far. Conservative — an upset nudges the odds, it doesn't rewrite them. |
-| **NBA** | Team-form model, series-aware for the playoffs (Game 5 of a series ≠ Game 1). |
+| **NBA**    | Team-form model, series-aware for the playoffs (Game 5 of a series ≠ Game 1).                                                                                                                                           |
 
-Held-out UFC: model **Brier 0.233** (n = 1,706 test bouts) vs. de-vigged market **0.200** (n = 1,374, the subset with odds). The market is sharp and hard to beat — and rather than hide that, the app **shows** it. That honesty is the point.
+Held-out UFC: model **Brier 0.233** (n = 1,706 test bouts) vs. de-vigged market **0.200** (n = 1,374, the subset with odds).
+
+The market is sharp and hard to beat — and rather than hide that, the app **shows** it. That honesty is the point.
 
 ---
 
 ## 🛠 Tech stack
 
 **Frontend** — Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4, Recharts, SSR Supabase auth.
+
 **Backend** — Python, FastAPI, scikit-learn, XGBoost, pandas, Pydantic; managed with `uv`.
+
 **Data & auth** — Supabase (Postgres, Row-Level Security, Realtime, Auth). SQL migrations are the source of truth for schema + policies.
+
 **AI** — Provider-agnostic LLM client (OpenAI-compatible) for the "Breakdown" analysis.
-**Payments** — Stripe (Checkout, webhooks, Customer Portal).
-**Infra** — Vercel (frontend), GitHub Actions (CI + scheduled data refresh).
+
+**Infrastructure** — Vercel (frontend), GitHub Actions (CI + scheduled data refresh), Supabase.
 
 By the numbers: ~6,100 lines of Python, ~4,700 lines of TypeScript/TSX, 5 SQL migrations, 65 passing backend tests.
 
@@ -109,8 +114,8 @@ By the numbers: ~6,100 lines of Python, ~4,700 lines of TypeScript/TSX, 5 SQL mi
 
 ## 📁 Project structure
 
-```
-backend/     FastAPI — ML, ingestion, LLM, Stripe webhook. Adapter pattern per sport.
+```text
+backend/     FastAPI — ML, ingestion, prediction generation, and LLM analysis.
   app/
     sports/          one self-registering adapter per sport (ufc, soccer, nba)
     services/        sport-agnostic ingestion orchestration
@@ -121,8 +126,8 @@ backend/     FastAPI — ML, ingestion, LLM, Stripe webhook. Adapter pattern per
   tests/             65 tests — registry, ingestion, auth, LLM behavior
 
 frontend/    Next.js App Router + TypeScript + Tailwind. Reads Supabase directly.
-  app/               dashboard, past, match detail, accuracy, pricing, legal
-  components/        prediction cards, follow buttons, the feed, billing UI
+  app/               dashboard, past, match detail, accuracy, legal
+  components/        prediction cards, follow buttons, the feed
   lib/               Supabase clients, queries, the importance-ranked feed
 
 supabase/    SQL migrations — schema + RLS policies (source of truth)
@@ -165,11 +170,11 @@ cd frontend && npm run lint && npx tsc --noEmit && npm run build
 
 ## 🗺 Status & roadmap
 
-**Live now:** all three sports end to end · grounded AI analysis · personalized following feed · honest accuracy tracking · auth + RLS multi-tenancy · automated twice-daily data refresh · CI on every push.
+**Live now:** all three sports end to end · grounded AI analysis · personalized following feed · honest accuracy tracking · auth + RLS security · automated twice-daily data refresh · CI on every push.
 
-**Built but currently off:** Stripe subscription billing + free/pro tier gating — fully implemented and test-mode verified, but toggled to all-free for launch (one flag re-enables it). NBA is in its off-season, so its board is empty until the next season tips off.
+NBA is currently in its off-season, so its board is empty until the next season tips off.
 
-**Next up:** club soccer leagues (Premier League / La Liga / Champions League), richer per-player stat context in the analysis, and flipping billing live.
+**Next up:** club soccer leagues (Premier League / La Liga / Champions League), richer per-player stat context in the analysis, additional sports supported through the adapter framework, and deeper historical performance insights.
 
 ---
 

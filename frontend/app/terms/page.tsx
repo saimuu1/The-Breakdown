@@ -9,7 +9,7 @@ export default function TermsPage() {
     <LegalDoc title="Terms of Service" updated={TERMS_UPDATED}>
       <p className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 text-xs text-amber-300/80">
         Template for review. These terms are a starting point and should be reviewed by a
-        qualified attorney before {COMPANY_NAME} accepts payment.
+        qualified attorney before {COMPANY_NAME} relies on them.
       </p>
 
       <p>
@@ -59,12 +59,11 @@ export default function TermsPage() {
         </p>
       </Section>
 
-      <Section heading="5. Subscriptions and billing">
+      <Section heading="5. Pricing">
         <p>
-          Paid plans are billed in advance on a recurring basis through our payment processor. Your
-          subscription renews automatically until cancelled. You may cancel at any time; cancellation
-          takes effect at the end of the current billing period, and you retain access until then.
-          Except where required by law, payments are non-refundable. Prices may change with notice.
+          The Service is currently free to use, with no subscription or payment required. If paid
+          plans are introduced in the future, their terms will be presented before any charge and
+          these Terms will be updated accordingly.
         </p>
       </Section>
 

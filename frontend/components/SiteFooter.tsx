@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { COMPANY_NAME, MIN_AGE, SUPPORT_EMAIL } from "@/lib/legal";
+import { COMPANY_NAME, MIN_AGE, SUPPORT_URL } from "@/lib/legal";
 
 /** Shared footer for the app pages: legal links + the standing disclaimer.
    Landing page keeps its own richer footer. */
@@ -22,7 +22,9 @@ export function SiteFooter() {
             Responsible gaming
           </Link>
           <a
-            href={`mailto:${SUPPORT_EMAIL}`}
+            href={SUPPORT_URL}
+            target="_blank"
+            rel="noopener noreferrer"
             className="transition-colors duration-150 hover:text-[#b0b8d0]"
           >
             Support

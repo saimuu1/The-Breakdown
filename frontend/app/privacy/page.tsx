@@ -8,8 +8,8 @@ export default function PrivacyPage() {
   return (
     <LegalDoc title="Privacy Policy" updated={PRIVACY_UPDATED}>
       <p className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 text-xs text-amber-300/80">
-        Template for review. Confirm this matches what you actually collect, and have a qualified
-        attorney review it before {COMPANY_NAME} accepts payment.
+        Template for review. Confirm this matches what {COMPANY_NAME} actually collects, and have a
+        qualified attorney review it before relying on it.
       </p>
 
       <p>
@@ -23,29 +23,26 @@ export default function PrivacyPage() {
           credentials, managed by our authentication provider (Supabase).
         </p>
         <p>
-          <span className="text-[#e4e7f0]">Usage data:</span> the teams and fighters you follow, your
-          plan tier, and basic activity needed to run the Service.
+          <span className="text-[#e4e7f0]">Usage data:</span> the teams and fighters you follow and
+          basic activity needed to run the Service.
         </p>
         <p>
-          <span className="text-[#e4e7f0]">Payment data:</span> when you subscribe, our payment
-          processor (Stripe) handles your card details. We never see or store full card numbers — we
-          receive only a customer reference and subscription status.
+          The Service is currently free, so we do not collect or process any payment information.
         </p>
       </Section>
 
       <Section heading="2. How we use it">
         <p>
-          To create and secure your account, provide predictions and your personalized feed, process
-          subscriptions, respond to support requests, and keep the Service working and safe.
+          To create and secure your account, provide predictions and your personalized feed, respond
+          to support requests, and keep the Service working and safe.
         </p>
       </Section>
 
       <Section heading="3. How we share it">
         <p>
           We do not sell your personal data. We share it only with the service providers that run the
-          product on our behalf — our hosting/database provider (Supabase), our payment processor
-          (Stripe), and similar infrastructure — and only as needed to operate the Service, or when
-          required by law.
+          product on our behalf — our hosting/database and authentication provider (Supabase) and
+          similar infrastructure — and only as needed to operate the Service, or when required by law.
         </p>
       </Section>
 

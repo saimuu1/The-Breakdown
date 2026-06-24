@@ -1,6 +1,7 @@
 import Link from "next/link";
 
-const SUPPORT_EMAIL = "smural61@asu.edu";
+import { TeamCrest } from "@/components/TeamCrest";
+import { SUPPORT_URL } from "@/lib/legal";
 
 const displayFont = { fontFamily: "var(--font-syne), system-ui, sans-serif" };
 
@@ -83,63 +84,56 @@ function Hero() {
   );
 }
 
+// A real, completed prediction the model called correctly — shown on the landing
+// as honest proof, not a hypothetical. France (62%) over Iraq at the World Cup.
 function MockCard() {
   return (
     <div className="rounded-2xl border border-[#1e2236] bg-[#0c0f1a] p-5 shadow-2xl shadow-black/40">
       <div className="mb-4 flex items-center justify-between text-xs text-[#5a607a]">
         <span className="rounded bg-[#181b2a] px-2 py-0.5 font-medium uppercase tracking-wide text-[#8b92a8]">
-          UFC
+          Soccer
         </span>
-        <span>UFC Freedom 250 · Main Event</span>
+        <span>World Cup · Group stage</span>
       </div>
 
       <div className="mb-4 flex items-center justify-between gap-3">
         <div className="flex flex-1 items-center justify-end gap-2 text-right">
-          <span className="font-semibold text-[#e4e7f0]">Ilia Topuria</span>
-          <Crest initials="IT" color="emerald" />
+          <span className="font-semibold text-[#e4e7f0]">France</span>
+          <TeamCrest
+            name="France"
+            logoUrl="https://a.espncdn.com/i/teamlogos/countries/500/fra.png"
+          />
         </div>
         <span className="text-xs font-medium text-[#3a3e55]">vs</span>
         <div className="flex flex-1 items-center gap-2">
-          <Crest initials="JG" color="sky" />
-          <span className="font-semibold text-[#e4e7f0]">Justin Gaethje</span>
+          <TeamCrest
+            name="Iraq"
+            logoUrl="https://a.espncdn.com/i/teamlogos/countries/500/irq.png"
+          />
+          <span className="font-semibold text-[#e4e7f0]">Iraq</span>
         </div>
       </div>
 
-      <MockBar home={36} />
-
-      <p className="mt-4 line-clamp-3 text-sm leading-relaxed text-[#5a607a]">
-        <span className="font-semibold text-emerald-400">The Breakdown: </span>
-        Gaethje&apos;s relentless pressure and leg-kick volume look to drag this into the
-        championship rounds, where his output climbs — and the model leans his way late if
-        he can weather Topuria&apos;s early power…
-      </p>
-    </div>
-  );
-}
-
-function Crest({ initials, color }: { initials: string; color: "emerald" | "sky" }) {
-  const cls =
-    color === "emerald" ? "bg-emerald-500/15 text-emerald-400" : "bg-sky-500/15 text-sky-400";
-  return (
-    <span className={`flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-bold ${cls}`}>
-      {initials}
-    </span>
-  );
-}
-
-function MockBar({ home }: { home: number }) {
-  const away = 100 - home;
-  const homeFav = home >= away;
-  return (
-    <div>
       <div className="flex h-1.5 overflow-hidden rounded-full bg-[#1a1e30]">
-        <div className="bg-emerald-500" style={{ width: `${home}%` }} />
-        <div className="bg-sky-500" style={{ width: `${away}%` }} />
+        <div className="bg-emerald-500" style={{ width: "62%" }} />
+        <div className="bg-[#3a3e55]" style={{ width: "17%" }} />
+        <div className="bg-sky-500" style={{ width: "21%" }} />
       </div>
-      <div className="mt-2 flex justify-between text-xs font-medium">
-        <span className={homeFav ? "text-emerald-400" : "text-emerald-400/40"}>{home}%</span>
-        <span className={!homeFav ? "text-sky-400" : "text-sky-400/40"}>{away}%</span>
+      <div className="mt-2 flex items-center justify-between text-xs font-medium">
+        <span className="text-emerald-400">France 62%</span>
+        <span className="text-[#5a607a]">Draw 17%</span>
+        <span className="text-sky-400/60">Iraq 21%</span>
       </div>
+
+      <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-emerald-500/12 px-2.5 py-1 text-xs font-semibold text-emerald-400">
+        <span aria-hidden="true">✓</span> Called it — France won
+      </div>
+
+      <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-[#5a607a]">
+        <span className="font-semibold text-emerald-400">The Breakdown: </span>
+        France, led by coach Didier Deschamps, came in as a well-oiled machine that&apos;s
+        tough to break down — and the model leaned on their tempo and depth to handle Iraq.
+      </p>
     </div>
   );
 }
@@ -241,15 +235,15 @@ function HowItWorks() {
 const BREAKDOWN_SECTIONS = [
   {
     label: "The Story",
-    body: "A five-round lightweight title fight headlining in Abu Dhabi — Gaethje defending against a featherweight champ moving up to chase a second belt.",
+    body: "A World Cup group-stage clash — France, led by Didier Deschamps and arriving in strong form, against an Iraq side hoping to frustrate the favorites and steal a result.",
   },
   {
     label: "The Key to the Matchup",
-    body: "Gaethje's volume and championship-round cardio are the model's biggest lean — his output tends to climb late, exactly where a move-up fighter is most likely to fade.",
+    body: "France's attacking tempo and squad depth were the model's biggest lean — the kind of team that wears an opponent down and creates chances in waves.",
   },
   {
     label: "The Pick",
-    body: "Gaethje by decision or late TKO. The model gives him 64% — the value is in the deep waters of rounds four and five.",
+    body: "France at 62% — and they delivered. A confident, correct call on one of the tournament's heavyweights.",
   },
 ];
 
@@ -338,7 +332,9 @@ function Footer() {
               Responsible gaming
             </Link>
             <a
-              href={`mailto:${SUPPORT_EMAIL}`}
+              href={SUPPORT_URL}
+              target="_blank"
+              rel="noopener noreferrer"
               className="flex items-center gap-1.5 transition-colors duration-150 hover:text-[#b0b8d0]"
             >
               <MailIcon />

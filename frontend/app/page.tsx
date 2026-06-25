@@ -85,7 +85,7 @@ function Hero() {
 }
 
 // A real, completed prediction the model called correctly — shown on the landing
-// as honest proof, not a hypothetical. France (62%) over Iraq at the World Cup.
+// as honest proof, not a hypothetical. England (50%) over Croatia at the World Cup.
 function MockCard() {
   return (
     <div className="rounded-2xl border border-[#1e2236] bg-[#0c0f1a] p-5 shadow-2xl shadow-black/40">
@@ -98,41 +98,41 @@ function MockCard() {
 
       <div className="mb-4 flex items-center justify-between gap-3">
         <div className="flex flex-1 items-center justify-end gap-2 text-right">
-          <span className="font-semibold text-[#e4e7f0]">France</span>
+          <span className="font-semibold text-[#e4e7f0]">England</span>
           <TeamCrest
-            name="France"
-            logoUrl="https://a.espncdn.com/i/teamlogos/countries/500/fra.png"
+            name="England"
+            logoUrl="https://a.espncdn.com/i/teamlogos/countries/500/eng.png"
           />
         </div>
         <span className="text-xs font-medium text-[#3a3e55]">vs</span>
         <div className="flex flex-1 items-center gap-2">
           <TeamCrest
-            name="Iraq"
-            logoUrl="https://a.espncdn.com/i/teamlogos/countries/500/irq.png"
+            name="Croatia"
+            logoUrl="https://a.espncdn.com/i/teamlogos/countries/500/cro.png"
           />
-          <span className="font-semibold text-[#e4e7f0]">Iraq</span>
+          <span className="font-semibold text-[#e4e7f0]">Croatia</span>
         </div>
       </div>
 
       <div className="flex h-1.5 overflow-hidden rounded-full bg-[#1a1e30]">
-        <div className="bg-emerald-500" style={{ width: "62%" }} />
-        <div className="bg-[#3a3e55]" style={{ width: "17%" }} />
-        <div className="bg-sky-500" style={{ width: "21%" }} />
+        <div className="bg-emerald-500" style={{ width: "50.3%" }} />
+        <div className="bg-[#3a3e55]" style={{ width: "24.2%" }} />
+        <div className="bg-sky-500" style={{ width: "25.5%" }} />
       </div>
       <div className="mt-2 flex items-center justify-between text-xs font-medium">
-        <span className="text-emerald-400">France 62%</span>
-        <span className="text-[#5a607a]">Draw 17%</span>
-        <span className="text-sky-400/60">Iraq 21%</span>
+        <span className="text-emerald-400">England 50%</span>
+        <span className="text-[#5a607a]">Draw 24%</span>
+        <span className="text-sky-400/60">Croatia 25%</span>
       </div>
 
       <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-emerald-500/12 px-2.5 py-1 text-xs font-semibold text-emerald-400">
-        <span aria-hidden="true">✓</span> Called it — France won
+        <span aria-hidden="true">✓</span> Called it — England won
       </div>
 
       <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-[#5a607a]">
         <span className="font-semibold text-emerald-400">The Breakdown: </span>
-        France, led by coach Didier Deschamps, came in as a well-oiled machine that&apos;s
-        tough to break down — and the model leaned on their tempo and depth to handle Iraq.
+        England and Croatia have history — they met in the 2018 World Cup semifinal. Reshaped
+        under Gareth Southgate since, England were the model&apos;s lean in a tight one.
       </p>
     </div>
   );
@@ -235,15 +235,15 @@ function HowItWorks() {
 const BREAKDOWN_SECTIONS = [
   {
     label: "The Story",
-    body: "A World Cup group-stage clash — France, led by Didier Deschamps and arriving in strong form, against an Iraq side hoping to frustrate the favorites and steal a result.",
+    body: "A World Cup clash with real history — England and Croatia, who met in the 2018 semifinal. England arrived reshaped under Gareth Southgate, blending experience with a wave of young talent.",
   },
   {
     label: "The Key to the Matchup",
-    body: "France's attacking tempo and squad depth were the model's biggest lean — the kind of team that wears an opponent down and creates chances in waves.",
+    body: "England's squad depth and improved balance under Southgate were the model's biggest lean — the edge that decides a tight, evenly-matched game.",
   },
   {
     label: "The Pick",
-    body: "France at 62% — and they delivered. A confident, correct call on one of the tournament's heavyweights.",
+    body: "England, the clear favorite at 50% to Croatia's 25% — and they delivered. Exactly the kind of close game the model is built to read.",
   },
 ];
 

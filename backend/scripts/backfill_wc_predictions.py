@@ -30,8 +30,10 @@ from app.sports.soccer.data import load_results
 from app.sports.soccer.features import build_current_forms, diff_features
 from app.sports.soccer.model import predict_match
 from app.sports.soccer.tournament import (
+    KNOCKOUT_START,
     MODEL_VERSION,
     TOURNAMENT_START,
+    collapse_draw,
     compute_elo,
     wc_experience,
     wc_match_prob,
@@ -92,14 +94,18 @@ def main() -> int:
             hk, ak, elo, form_probs, experience,
             prior(hk, date10), prior(ak, date10),
         )
+        # Knockout matches (Round of 32 onward) can't end in a draw.
+        if date10 >= KNOCKOUT_START:
+            probs = collapse_draw(probs)
 
         db.table("predictions").update(
             {"probs": probs, "model_version": MODEL_VERSION}
         ).eq("match_id", r["id"]).execute()
         updated += 1
         fav = max(probs, key=probs.get)
+        draw_pct = probs.get("draw", 0.0) * 100  # knockout matches have no draw
         logger.info("  %s vs %s -> %s %.0f%% (D %.0f%%)",
-                    home, away, fav, probs[fav] * 100, probs["draw"] * 100)
+                    home, away, fav, probs[fav] * 100, draw_pct)
 
     logger.info("WC re-prediction complete: %d matches updated", updated)
     return 0

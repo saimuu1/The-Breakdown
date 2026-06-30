@@ -30,6 +30,10 @@ import pandas as pd
 
 MODEL_VERSION = "wc2026-v1"
 TOURNAMENT_START = "2026-06-11"  # first 2026 World Cup match; ELO frozen before it
+# Round of 32 onward. Knockout matches can't end in a draw (extra time + penalties
+# always decide a winner), so predictions on/after this date are collapsed to a
+# two-way {home, away}. Group-stage matches before it keep their three-way draw.
+KNOCKOUT_START = "2026-06-28"
 
 ELO_BASE = 1500.0
 ELO_HOME_ADV = 65.0  # non-neutral home edge, in ELO points
@@ -145,6 +149,20 @@ def round_for(prior_wc_matches: int) -> str:
     if n <= 3:
         return "group"
     return {4: "r16", 5: "qf", 6: "sf", 7: "final"}.get(n, "final")
+
+
+def collapse_draw(probs: Mapping[str, float]) -> dict[str, float]:
+    """Two-way {home, away} for a knockout match — a draw is impossible there.
+
+    Drops the draw and renormalizes the two sides. This is the same as folding the
+    draw mass into each side in proportion to its win probability (since the three
+    sum to 1): home / (home + away), away / (home + away). No `draw` key remains.
+    """
+    home, away = probs["home"], probs["away"]
+    total = home + away
+    if total == 0:
+        return {"home": 0.5, "away": 0.5}
+    return {"home": home / total, "away": away / total}
 
 
 def pre_tournament_3way(

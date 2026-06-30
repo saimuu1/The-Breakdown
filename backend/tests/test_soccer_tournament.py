@@ -1,6 +1,7 @@
 """The tournament-aware World Cup model: 3-way sanity + tournament learning."""
 
 from app.sports.soccer.tournament import (
+    collapse_draw,
     elo_to_3way,
     performance_rating,
     round_for,
@@ -58,3 +59,18 @@ def test_probs_normalised():
     p = wc_match_prob("mid", "strong", ELO, FORM, EXP,
                       [{"team": "mid", "opp": "weak", "gf": 1, "ga": 1}], [])
     assert abs(sum(p.values()) - 1.0) < 1e-9
+
+
+def test_collapse_draw_drops_draw_and_keeps_favorite():
+    # Knockout matches can't draw: fold the draw into the two sides, no `draw` key.
+    two_way = collapse_draw({"home": 0.50, "draw": 0.20, "away": 0.30})
+    assert "draw" not in two_way
+    assert abs(sum(two_way.values()) - 1.0) < 1e-9
+    assert two_way["home"] > two_way["away"]  # favorite stays the favorite
+    # Renormalized in proportion: 0.50/0.80 and 0.30/0.80.
+    assert abs(two_way["home"] - 0.625) < 1e-9
+    assert abs(two_way["away"] - 0.375) < 1e-9
+
+
+def test_collapse_draw_handles_zero_total():
+    assert collapse_draw({"home": 0.0, "draw": 1.0, "away": 0.0}) == {"home": 0.5, "away": 0.5}

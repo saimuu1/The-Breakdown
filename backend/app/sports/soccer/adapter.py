@@ -123,6 +123,14 @@ class SoccerAdapter:
     def edges(self, features: dict, home: str, away: str) -> list[str]:
         return _top_soccer_edges(features, home, away, n=6)
 
+    def analysis_context(self, m: RawMatch) -> list[str]:
+        """Real current squads for both sides, so the persona names only actual,
+        currently-selected players — never fabricated ones. Fetched from ESPN and
+        cached; empty for bracket placeholders or if ESPN is unreachable."""
+        from app.integrations.espn_rosters import squads_context
+
+        return squads_context(m.home, m.away)
+
 
 adapter = SoccerAdapter()
 register(adapter)

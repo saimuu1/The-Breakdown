@@ -4,7 +4,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import type { Database } from "@/lib/types";
 
 // Routes that require an account. Predictions are gated; marketing pages are not.
-const PROTECTED_PREFIXES = ["/dashboard", "/past", "/matches", "/favorites", "/accuracy"];
+const PROTECTED_PREFIXES = ["/dashboard", "/past", "/matches", "/favorites", "/accuracy", "/settings"];
 
 /** Refresh the Supabase auth session on each request and gate protected routes. */
 export async function updateSession(request: NextRequest) {

@@ -1,7 +1,6 @@
+import { AppShell } from "@/components/AppShell";
 import { GroupedPredictionGrid } from "@/components/GroupedPredictionGrid";
-import { Nav } from "@/components/Nav";
 import { SearchBar } from "@/components/SearchBar";
-import { SiteFooter } from "@/components/SiteFooter";
 import { SportTabs } from "@/components/SportTabs";
 import {
   getFollowedCompetitorIds,
@@ -91,8 +90,7 @@ export default async function PastPage({
   }
 
   return (
-    <div className="min-h-screen bg-[#07090e] text-[#e4e7f0]">
-      <Nav />
+    <AppShell>
       <main className="mx-auto max-w-5xl px-6 py-12">
         <header className="mb-8">
           <h1
@@ -131,7 +129,6 @@ export default async function PastPage({
           }
         />
       </main>
-      <SiteFooter />
-    </div>
+    </AppShell>
   );
 }

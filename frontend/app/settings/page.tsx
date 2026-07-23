@@ -1,10 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { AppShell } from "@/components/AppShell";
 import { DeleteAccountButton } from "@/components/DeleteAccountButton";
 import { FollowingList } from "@/components/FollowingList";
-import { Nav } from "@/components/Nav";
-import { SiteFooter } from "@/components/SiteFooter";
 import { BILLING_ENABLED } from "@/lib/flags";
 import { getFollowedCompetitors, getMyPlan } from "@/lib/queries";
 import { createClient } from "@/lib/supabase/server";
@@ -32,8 +31,7 @@ export default async function SettingsPage() {
   const [plan, following] = await Promise.all([getMyPlan(), getFollowedCompetitors()]);
 
   return (
-    <div className="min-h-screen bg-[#07090e] text-[#e4e7f0]">
-      <Nav />
+    <AppShell>
       <main className="mx-auto max-w-2xl px-6 py-12">
         <h1
           className="text-4xl font-bold tracking-tight"
@@ -101,8 +99,7 @@ export default async function SettingsPage() {
           </div>
         </section>
       </main>
-      <SiteFooter />
-    </div>
+    </AppShell>
   );
 }
 

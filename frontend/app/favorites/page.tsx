@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { AppShell } from "@/components/AppShell";
 import { FeedCard } from "@/components/FeedCard";
 import { FollowingList } from "@/components/FollowingList";
 import { Nav } from "@/components/Nav";
@@ -47,8 +48,7 @@ export default async function FavoritesPage() {
   const [items, following] = await Promise.all([getFeed(), getFollowedCompetitors()]);
 
   return (
-    <div className="min-h-screen bg-[#07090e] text-[#e4e7f0]">
-      <Nav />
+    <AppShell>
       <main className="mx-auto max-w-3xl px-6 py-12">
         <header className="mb-8">
           <h1
@@ -72,8 +72,7 @@ export default async function FavoritesPage() {
           <FeedGroups items={items} />
         )}
       </main>
-      <SiteFooter />
-    </div>
+    </AppShell>
   );
 }
 

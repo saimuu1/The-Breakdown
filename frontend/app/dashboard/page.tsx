@@ -1,13 +1,13 @@
 import Link from "next/link";
 
+import { AppShell } from "@/components/AppShell";
 import { FightCard } from "@/components/FightCard";
 import { GroupedPredictionGrid } from "@/components/GroupedPredictionGrid";
-import { Nav } from "@/components/Nav";
 import { RealtimeRefresher } from "@/components/RealtimeRefresher";
 import { SearchBar } from "@/components/SearchBar";
-import { SiteFooter } from "@/components/SiteFooter";
 import { SportTabs } from "@/components/SportTabs";
 import { UpgradeButton } from "@/components/UpgradeButton";
+import accuracy from "@/lib/accuracy.json";
 import { BILLING_ENABLED } from "@/lib/flags";
 import { isMarqueeFight } from "@/lib/marquee";
 import {
@@ -55,8 +55,7 @@ export default async function DashboardPage({
   const lockedForFree = BILLING_ENABLED && !!user && plan === "free" && PRO_SPORTS.has(sport);
 
   return (
-    <div className="min-h-screen bg-[#07090e] text-[#e4e7f0]">
-      <Nav />
+    <AppShell>
       <RealtimeRefresher />
       <main className="mx-auto max-w-5xl px-6 py-12">
         <header className="mb-10">
@@ -76,6 +75,18 @@ export default async function DashboardPage({
               : "Every matchup called before the first bell. Here's who wins — and why."}
           </p>
         </header>
+
+        {!search && (
+          <div className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-3">
+            <StatTile label="Following" value={String(followedCompetitorIds.size)} sub="teams & fighters" />
+            <StatTile label={`Upcoming ${SPORT_NAME[sport] ?? sport}`} value={String(windowed.length)} sub="calls on the board" />
+            <StatTile
+              label="Model accuracy"
+              value={accuracy.model.brier.toFixed(3)}
+              sub={`Brier · market ${accuracy.market.brier.toFixed(3)}`}
+            />
+          </div>
+        )}
 
         <SportTabs basePath="/dashboard" active={sport} />
         <SearchBar
@@ -124,12 +135,21 @@ export default async function DashboardPage({
           }
         />
       </main>
-      <SiteFooter />
-    </div>
+    </AppShell>
   );
 }
 
 const SPORT_NAME: Record<string, string> = { ufc: "UFC", soccer: "Soccer", nba: "NBA" };
+
+function StatTile({ label, value, sub }: { label: string; value: string; sub?: string }) {
+  return (
+    <div className="rounded-xl border border-[#141826] bg-[#0c0f1a] px-4 py-3.5">
+      <p className="truncate text-xs font-medium text-[#5a607a]">{label}</p>
+      <p className="mt-1 text-2xl font-bold text-[#e4e7f0]">{value}</p>
+      {sub && <p className="mt-0.5 text-[11px] text-[#3a3e55]">{sub}</p>}
+    </div>
+  );
+}
 
 function ProUpsell({ sport }: { sport: string }) {
   const name = SPORT_NAME[sport] ?? sport;

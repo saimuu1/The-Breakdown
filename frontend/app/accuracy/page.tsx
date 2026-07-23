@@ -1,13 +1,12 @@
+import { AppShell } from "@/components/AppShell";
 import { CalibrationChart } from "@/components/CalibrationChart";
-import { Nav } from "@/components/Nav";
 import accuracy from "@/lib/accuracy.json";
 
 export default function AccuracyPage() {
   const gap = accuracy.model.brier - accuracy.market.brier;
 
   return (
-    <div className="min-h-screen bg-[#07090e] text-[#e4e7f0]">
-      <Nav />
+    <AppShell>
       <main className="mx-auto max-w-3xl px-6 py-12">
         <header className="mb-8">
           <h1 className="text-4xl font-bold tracking-tight" style={{ fontFamily: "var(--font-syne), system-ui, sans-serif" }}>Track record</h1>
@@ -59,7 +58,7 @@ export default function AccuracyPage() {
           train/test split · market = de-vigged closing moneyline (n={accuracy.market.n}).
         </p>
       </main>
-    </div>
+    </AppShell>
   );
 }
 

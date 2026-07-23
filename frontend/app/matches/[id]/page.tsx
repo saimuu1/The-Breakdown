@@ -1,10 +1,10 @@
 import Link from "next/link";
 
+import { AppShell } from "@/components/AppShell";
 import { Breakdown } from "@/components/Breakdown";
 import { Disclaimer } from "@/components/Disclaimer";
 import { FollowButton } from "@/components/FollowButton";
 import { Leaders } from "@/components/Leaders";
-import { Nav } from "@/components/Nav";
 import { ProbabilityBar } from "@/components/ProbabilityBar";
 import { StatCompare } from "@/components/StatCompare";
 import { TeamCrest } from "@/components/TeamCrest";
@@ -25,8 +25,7 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
   const prediction = await getPredictionByMatch(id);
 
   return (
-    <div className="min-h-screen bg-[#07090e] text-[#e4e7f0]">
-      <Nav />
+    <AppShell>
       <main className="mx-auto max-w-3xl px-6 py-10">
         <Link href="/dashboard" className="text-sm text-[#5a607a] transition-colors duration-150 hover:text-[#b0b8d0]">
           ← Back to dashboard
@@ -47,7 +46,7 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
           </div>
         )}
       </main>
-    </div>
+    </AppShell>
   );
 }
 
